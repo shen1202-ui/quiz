@@ -1,0 +1,3392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>十五冶 · 知识竞赛备赛系统</title>
+    <style>
+        :root {
+            --navy: #0f2744;
+            --navy2: #1a3a5c;
+            --gold: #d4a843;
+            --gold-light: #f5d78e;
+            --red: #c0392b;
+            --green: #1a7a4a;
+            --green-bg: #e8f7ef;
+            --bg: #edf0f7;
+            --card: #fff;
+            --text: #1a2535;
+            --sub: #7a8599;
+            --border: #dde3ee;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background .3s, color .3s;
+        }
+        .topbar {
+            background: linear-gradient(135deg, var(--navy), var(--navy2));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            height: 64px;
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, .28);
+            transition: background .3s;
+        }
+        .topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .brand-badge {
+            width: 40px;
+            height: 40px;
+            background: var(--gold);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--navy);
+        }
+        .brand-name {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: .5px;
+        }
+        .brand-name em {
+            color: var(--gold);
+            font-style: normal;
+        }
+        .topbar-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, .5);
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .step-item:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, .1);
+        }
+        .step-item.active {
+            background: var(--gold);
+            color: var(--navy);
+            font-weight: 700;
+        }
+        .step-item.done {
+            color: rgba(255, 255, 255, .7);
+        }
+        .step-sep {
+            color: rgba(255, 255, 255, .25);
+            font-size: 16px;
+        }
+        .page {
+            display: none;
+            padding: 36px 40px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .page.active {
+            display: block;
+        }
+        .page-title {
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--navy);
+            margin-bottom: 6px;
+        }
+        .page-sub {
+            font-size: 14px;
+            color: var(--sub);
+            margin-bottom: 32px;
+        }
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .config-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px 18px;
+            border: 2px solid var(--border);
+            transition: all .2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .config-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--c-accent, #ccc);
+        }
+        .config-card:hover {
+            border-color: var(--c-accent, #ccc);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .10);
+        }
+        .cc-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .cc-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .cc-name {
+            font-weight: 800;
+            font-size: 14px;
+            color: var(--navy);
+        }
+        .cc-total {
+            font-size: 11px;
+            color: var(--sub);
+            margin-top: 2px;
+        }
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+        .field label {
+            font-size: 11px;
+            color: var(--sub);
+            font-weight: 600;
+        }
+        .field select,
+        .field input {
+            border: 1.5px solid var(--border);
+            border-radius: 7px;
+            padding: 6px 9px;
+            font-size: 12px;
+            outline: none;
+            font-family: inherit;
+            color: var(--text);
+            background: #f8fafd;
+            transition: border-color .2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .field select:focus,
+        .field input:focus {
+            border-color: var(--c-accent, #888);
+            background: #fff;
+        }
+        .field-row2 {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .go-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--navy), var(--navy2));
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all .25s;
+            letter-spacing: 2px;
+            font-family: inherit;
+            box-shadow: 0 4px 18px rgba(15, 39, 68, .30);
+        }
+        .go-btn:hover {
+            background: linear-gradient(135deg, var(--gold), #c09030);
+            color: var(--navy);
+            box-shadow: 0 6px 22px rgba(212, 168, 67, .40);
+            transform: translateY(-1px);
+        }
+        .select-title {
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--navy);
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .select-sub {
+            font-size: 14px;
+            color: var(--sub);
+            margin-bottom: 36px;
+            text-align: center;
+        }
+        .subject-btns {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .subject-btn {
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            padding: 32px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all .25s;
+            position: relative;
+            overflow: hidden;
+            font-family: inherit;
+            width: 100%;
+        }
+        .subject-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--c-accent, #ccc);
+        }
+        .subject-btn:hover:not(.done) {
+            border-color: var(--c-accent, #ccc);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+        }
+        .subject-btn.done {
+            background: #f0fdf4;
+            border-color: #86efac;
+            opacity: .85;
+        }
+        .subject-btn.done::after {
+            content: '✓';
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--green);
+        }
+        .sb-icon {
+            width: 68px;
+            height: 68px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            transition: transform .2s;
+        }
+        .subject-btn:hover:not(.done) .sb-icon {
+            transform: scale(1.08);
+        }
+        .sb-name {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--navy);
+        }
+        .sb-count {
+            font-size: 12px;
+            color: var(--sub);
+        }
+        .sb-status {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 12px;
+            border-radius: 20px;
+            background: var(--bg);
+            color: var(--sub);
+        }
+        .subject-btn.done .sb-status {
+            background: #e8f7ef;
+            color: var(--green);
+        }
+        .score-summary {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
+            border: 1.5px solid var(--border);
+            margin-bottom: 24px;
+        }
+        .ss-item {
+            text-align: center;
+        }
+        .ss-name {
+            font-size: 12px;
+            color: var(--sub);
+            margin-bottom: 4px;
+        }
+        .ss-score {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--navy);
+        }
+        .ss-score.has-score {
+            color: var(--green);
+        }
+        .finish-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--green), #1a7a4a);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .25s;
+            box-shadow: 0 4px 16px rgba(26, 122, 74, .30);
+        }
+        .finish-btn:hover {
+            opacity: .9;
+            transform: translateY(-1px);
+        }
+        .finish-btn:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .quiz-header {
+            background: linear-gradient(135deg, var(--navy), var(--navy2));
+            color: #fff;
+            border-radius: 20px;
+            padding: 24px 32px 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 6px 24px rgba(15, 39, 68, .25);
+            position: relative;
+            overflow: hidden;
+        }
+        .quiz-header::after {
+            content: '';
+            position: absolute;
+            right: -30px;
+            top: -30px;
+            width: 160px;
+            height: 160px;
+            background: rgba(255, 255, 255, .04);
+            border-radius: 50%;
+        }
+        .qh-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .quiz-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, .55);
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .quiz-progress {
+            font-size: 24px;
+            font-weight: 900;
+        }
+        .quiz-score-num {
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--gold);
+            line-height: 1;
+        }
+        .timer-wrap {
+            margin-top: 6px;
+        }
+        .timer-display {
+            font-size: 22px;
+            font-weight: 900;
+            color: #fcd34d;
+        }
+        .timer-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, .55);
+        }
+        .progress-bar {
+            height: 5px;
+            background: rgba(255, 255, 255, .15);
+            border-radius: 3px;
+            margin-top: 18px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light));
+            border-radius: 3px;
+            transition: width .4s;
+        }
+        .question-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 36px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .07);
+            border: 1.5px solid var(--border);
+            margin-bottom: 20px;
+            transition: background .3s, border-color .3s;
+        }
+        .q-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .q-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
+            background: #e8f0fe;
+            color: #2563eb;
+        }
+        .q-badge.multi {
+            background: #fef3e2;
+            color: #d97706;
+        }
+        .q-badge.fill {
+            background: var(--green-bg);
+            color: var(--green);
+        }
+        .q-badge.judge {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+        .q-label {
+            font-size: 13px;
+            color: var(--sub);
+            font-weight: 500;
+        }
+        .q-text {
+            font-size: 19px;
+            font-weight: 700;
+            line-height: 1.7;
+            color: var(--navy);
+            margin-bottom: 28px;
+        }
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .option-btn {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px 20px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            background: #fafbfd;
+            cursor: pointer;
+            transition: all .18s;
+            text-align: left;
+            font-family: inherit;
+            width: 100%;
+        }
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--navy2);
+            background: #f0f4ff;
+        }
+        .opt-label {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--border);
+            color: var(--sub);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+            transition: all .18s;
+        }
+        .opt-text {
+            font-size: 15px;
+            line-height: 1.6;
+            padding-top: 2px;
+            color: var(--text);
+        }
+        .option-btn.correct {
+            border-color: var(--green);
+            background: var(--green-bg);
+        }
+        .option-btn.correct .opt-label {
+            background: var(--green);
+            color: #fff;
+        }
+        .option-btn.correct .opt-text {
+            color: var(--green);
+            font-weight: 600;
+        }
+        .option-btn.wrong {
+            border-color: var(--red);
+            background: #fef2f2;
+        }
+        .option-btn.wrong .opt-label {
+            background: var(--red);
+            color: #fff;
+        }
+        .option-btn.selected {
+            border-color: var(--navy2);
+            background: #dbeafe;
+        }
+        .option-btn.selected .opt-label {
+            background: var(--navy2);
+            color: #fff;
+        }
+        .fill-box {
+            background: var(--green-bg);
+            border: 2px solid #86efac;
+            border-radius: 14px;
+            padding: 20px 24px;
+            margin-top: 20px;
+            display: none;
+        }
+        .fill-box-label {
+            font-size: 11px;
+            color: var(--green);
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .fill-box-ans {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--green);
+        }
+        .action-row {
+            display: flex;
+            gap: 14px;
+            margin-top: 20px;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 13px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .2s;
+        }
+        .btn-show {
+            background: linear-gradient(135deg, var(--navy), var(--navy2));
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(15, 39, 68, .28);
+        }
+        .btn-show:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(15, 39, 68, .32);
+        }
+        .btn-correct {
+            background: linear-gradient(135deg, #16a34a, var(--green));
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(26, 122, 74, .28);
+        }
+        .btn-correct:hover {
+            transform: translateY(-1px);
+        }
+        .btn-wrong {
+            background: linear-gradient(135deg, #dc2626, var(--red));
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(192, 57, 43, .28);
+        }
+        .btn-wrong:hover {
+            transform: translateY(-1px);
+        }
+        .nav-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+        }
+        .q-counter {
+            font-size: 13px;
+            color: var(--sub);
+            font-weight: 500;
+        }
+        .skip-btn {
+            background: transparent;
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            color: var(--sub);
+            padding: 8px 22px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .2s;
+        }
+        .skip-btn:hover {
+            border-color: var(--sub);
+            color: var(--text);
+        }
+        .result-hero {
+            background: linear-gradient(135deg, var(--navy), var(--navy2));
+            border-radius: 20px;
+            padding: 44px 40px;
+            text-align: center;
+            color: #fff;
+            box-shadow: 0 8px 32px rgba(15, 39, 68, .28);
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .result-hero::before,
+        .result-hero::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .04);
+        }
+        .result-hero::before {
+            width: 240px;
+            height: 240px;
+            left: -60px;
+            bottom: -60px;
+        }
+        .result-hero::after {
+            width: 160px;
+            height: 160px;
+            right: -30px;
+            top: -30px;
+        }
+        .rh-emoji {
+            font-size: 56px;
+            margin-bottom: 12px;
+        }
+        .rh-title {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 32px;
+        }
+        .rh-ring {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid var(--gold);
+            background: rgba(255, 255, 255, .07);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 36px;
+            box-shadow: 0 0 0 10px rgba(212, 168, 67, .12);
+        }
+        .rh-pct {
+            font-size: 46px;
+            font-weight: 900;
+            color: var(--gold);
+            line-height: 1;
+        }
+        .rh-pct-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, .55);
+            margin-top: 4px;
+        }
+        .rh-stats {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 36px;
+            flex-wrap: wrap;
+        }
+        .rh-stat {
+            background: rgba(255, 255, 255, .10);
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 14px;
+            padding: 14px 24px;
+            min-width: 100px;
+        }
+        .rh-stat .rs-num {
+            font-size: 28px;
+            font-weight: 900;
+        }
+        .rh-stat .rs-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, .55);
+            margin-top: 2px;
+        }
+        .rh-stat.s-correct .rs-num {
+            color: #4ade80;
+        }
+        .rh-stat.s-wrong .rs-num {
+            color: #f87171;
+        }
+        .rh-stat.s-total .rs-num {
+            color: #fff;
+        }
+        .rh-btns {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+        }
+        .rh-btn {
+            padding: 13px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .2s;
+        }
+        .rh-btn-review {
+            background: rgba(255, 255, 255, .15);
+            color: #fff;
+            border: 1.5px solid rgba(255, 255, 255, .3);
+        }
+        .rh-btn-review:hover {
+            background: rgba(255, 255, 255, .25);
+        }
+        .rh-btn-home {
+            background: var(--gold);
+            color: var(--navy);
+        }
+        .rh-btn-home:hover {
+            background: var(--gold-light);
+        }
+        .subject-results {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .sr-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px 16px;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
+            border: 1.5px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        .sr-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--c-accent, #ccc);
+        }
+        .sr-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .sr-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 10px;
+        }
+        .sr-pct {
+            font-size: 28px;
+            font-weight: 900;
+        }
+        .sr-detail {
+            font-size: 11px;
+            color: var(--sub);
+            margin-top: 4px;
+        }
+        .wrong-section {
+            margin-top: 8px;
+        }
+        .sec-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sec-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--gold);
+            border-radius: 2px;
+            display: inline-block;
+        }
+        .wrong-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .wrong-item {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 22px 24px;
+            border-left: 5px solid var(--red);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
+        }
+        .wi-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .wi-tag {
+            background: #fef2f2;
+            color: var(--red);
+            border-radius: 6px;
+            padding: 2px 10px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+        .wi-skip {
+            background: #fef3e2;
+            color: #d97706;
+        }
+        .wi-sub {
+            font-size: 12px;
+            color: var(--sub);
+        }
+        .wi-q {
+            font-weight: 700;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--navy);
+            margin-bottom: 10px;
+        }
+        .wi-ans-label {
+            font-size: 11px;
+            color: var(--sub);
+            font-weight: 700;
+            letter-spacing: .5px;
+            margin-bottom: 4px;
+        }
+        .wi-ans {
+            font-size: 17px;
+            font-weight: 900;
+            color: var(--green);
+        }
+        .no-wrong {
+            text-align: center;
+            padding: 48px;
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
+        }
+        .no-wrong .nw-icon {
+            font-size: 52px;
+            margin-bottom: 12px;
+        }
+        .no-wrong .nw-text {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--green);
+        }
+        .log-table-wrap {
+            overflow-x: auto;
+            background: var(--card);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1.5px solid var(--border);
+        }
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .log-table th {
+            background: var(--navy);
+            color: #fff;
+            padding: 10px 12px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .log-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        .log-table tr:hover {
+            background: #f8fafd;
+        }
+        .log-question {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: block;
+        }
+        .export-btn {
+            margin-top: 16px;
+            padding: 10px 24px;
+            background: var(--navy);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .export-btn:hover {
+            background: var(--navy2);
+        }
+        .config-bar {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            margin-bottom: 20px;
+            background: var(--card);
+            padding: 16px 24px;
+            border-radius: 14px;
+            border: 1.5px solid var(--border);
+            flex-wrap: wrap;
+        }
+        .config-bar label {
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--navy);
+        }
+        .config-bar select,
+        .config-bar input[type="number"] {
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            background: #fff;
+            color: var(--text);
+        }
+        .config-bar input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--navy);
+            cursor: pointer;
+        }
+        .config-bar .hint {
+            font-size: 12px;
+            color: var(--sub);
+        }
+
+        @keyframes shake {
+            0% {
+                transform: rotate(0deg);
+            }
+            10% {
+                transform: rotate(-15deg);
+            }
+            20% {
+                transform: rotate(15deg);
+            }
+            30% {
+                transform: rotate(-10deg);
+            }
+            40% {
+                transform: rotate(10deg);
+            }
+            50% {
+                transform: rotate(-5deg);
+            }
+            60% {
+                transform: rotate(5deg);
+            }
+            70% {
+                transform: rotate(-3deg);
+            }
+            80% {
+                transform: rotate(3deg);
+            }
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+        @keyframes bounceIn {
+            0% {
+                transform: scale(.5);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.08);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        #mock-box.show {
+            animation: bounceIn .3s ease forwards;
+        }
+
+        @media (max-width: 900px) {
+            .config-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .subject-btns {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .subject-results {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .score-summary {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .topbar-step .step-item {
+                font-size: 11px;
+                padding: 4px 10px;
+            }
+            .topbar-step .step-sep {
+                font-size: 12px;
+            }
+        }
+        @media (max-width: 600px) {
+            .config-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .subject-btns {
+                grid-template-columns: 1fr 1fr;
+            }
+            .subject-results {
+                grid-template-columns: 1fr 1fr;
+            }
+            .score-summary {
+                grid-template-columns: 1fr 1fr;
+            }
+            .topbar {
+                flex-direction: column;
+                height: auto;
+                padding: 10px 16px;
+                gap: 8px;
+            }
+            .topbar-step {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .page {
+                padding: 16px;
+            }
+            .question-card {
+                padding: 20px;
+            }
+        }/* ===== 移动端适配增强 ===== */
+
+/* 小屏手机 (≤480px) */
+@media (max-width: 480px) {
+    /* 页面内边距减小 */
+    .page {
+        padding: 12px 10px;
+    }
+
+    /* 顶栏换行，高度自适应 */
+    .topbar {
+        flex-direction: column;
+        height: auto;
+        padding: 8px 12px;
+        gap: 6px;
+    }
+    .topbar-brand .brand-name {
+        font-size: 14px;
+    }
+    .topbar-step {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 4px 8px;
+    }
+    .step-item {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    .step-sep {
+        font-size: 10px;
+    }
+
+    /* 配置页卡片变为一列 */
+    .config-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .config-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 12px 16px;
+    }
+    .config-bar > div {
+        justify-content: space-between;
+    }
+    .config-bar label {
+        font-size: 12px;
+    }
+    .config-bar select,
+    .config-bar input[type="number"] {
+        font-size: 14px; /* 防止iOS自动缩放 */
+        padding: 8px 10px;
+    }
+
+    /* 选题页专业按钮改为2列 */
+    .subject-btns {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    .subject-btn {
+        padding: 20px 12px;
+    }
+    .sb-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+    }
+    .sb-name {
+        font-size: 15px;
+    }
+    .sb-count {
+        font-size: 11px;
+    }
+    .score-summary {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 12px;
+    }
+
+    /* 答题页 */
+    .quiz-header {
+        padding: 16px 18px 14px;
+    }
+    .qh-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    .qh-row > div:last-child {
+        text-align: left;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .quiz-progress {
+        font-size: 18px;
+    }
+    .quiz-score-num {
+        font-size: 28px;
+    }
+    .timer-display {
+        font-size: 18px;
+    }
+
+    .question-card {
+        padding: 18px 16px;
+    }
+    .q-text {
+        font-size: 16px;
+        line-height: 1.5;
+        margin-bottom: 18px;
+    }
+    .option-btn {
+        padding: 14px 16px;
+        gap: 12px;
+    }
+    .opt-label {
+        width: 28px;
+        height: 28px;
+        font-size: 13px;
+    }
+    .opt-text {
+        font-size: 14px;
+    }
+    .action-btn {
+        padding: 14px;
+        font-size: 15px;
+    }
+    .nav-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .q-counter {
+        font-size: 12px;
+    }
+    .skip-btn {
+        padding: 6px 16px;
+        font-size: 12px;
+    }
+
+    /* 汇总页 */
+    .result-hero {
+        padding: 28px 20px;
+    }
+    .rh-emoji {
+        font-size: 40px;
+    }
+    .rh-title {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+    .rh-ring {
+        width: 110px;
+        height: 110px;
+    }
+    .rh-pct {
+        font-size: 32px;
+    }
+    .rh-stats {
+        gap: 10px;
+    }
+    .rh-stat {
+        padding: 10px 16px;
+        min-width: 70px;
+    }
+    .rh-stat .rs-num {
+        font-size: 20px;
+    }
+    .rh-btn {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+
+    .subject-results {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .sr-card {
+        padding: 14px 10px;
+    }
+    .sr-icon {
+        font-size: 22px;
+    }
+    .sr-name {
+        font-size: 12px;
+    }
+    .sr-pct {
+        font-size: 22px;
+    }
+    .sr-detail {
+        font-size: 10px;
+    }
+
+    /* 日志表格横向滚动 */
+    .log-table-wrap {
+        padding: 8px;
+    }
+    .log-table {
+        font-size: 11px;
+    }
+    .log-table th,
+    .log-table td {
+        padding: 6px 6px;
+        white-space: nowrap;
+    }
+    .log-table td:nth-child(4) {
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .export-btn {
+        padding: 8px 18px;
+        font-size: 13px;
+    }
+
+    /* 弹窗 */
+    #mock-box {
+        padding: 32px 24px;
+        max-width: 90%;
+    }
+    #mock-emoji {
+        font-size: 48px;
+    }
+    #mock-text {
+        font-size: 20px;
+    }
+    #mock-sub {
+        font-size: 14px;
+    }
+}
+
+/* 中等屏手机/平板 (481px ~ 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    .config-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .subject-btns {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .subject-results {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .score-summary {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .page {
+        padding: 20px 24px;
+    }
+    .topbar {
+        padding: 0 20px;
+    }
+}/* 触控优化：所有交互按钮最小高度44px */
+.option-btn,
+.action-btn,
+.skip-btn,
+.go-btn,
+.finish-btn,
+.rh-btn {
+    min-height: 44px;
+}
+    </style>
+</head>
+<body>
+
+    <!-- 顶栏 -->
+    <div class="topbar">
+        <div class="topbar-brand">
+            <div class="brand-badge">冶</div>
+            <div class="brand-name">中国十五冶 <em>·</em> 效益优先管理先行 <em>·</em> 备赛答题系统</div>
+        </div>
+        <div class="topbar-step">
+            <div class="step-item active" id="step1" onclick="showPage('config')">① 配置出题</div>
+            <div class="step-sep">›</div>
+            <div class="step-item" id="step2" onclick="showPage('select')">② 选择专业</div>
+            <div class="step-sep">›</div>
+            <div class="step-item" id="step3" onclick="showPage('quiz')">③ 答题</div>
+            <div class="step-sep">›</div>
+            <div class="step-item" id="step4" onclick="showPage('result')">④ 汇总结果</div>
+        </div>
+    </div>
+
+    <!-- 配置页 -->
+    <div class="page active" id="page-config">
+        <div class="page-title">今日备赛出题配置</div>
+        <div class="page-sub">设置每个专业的题型、题号范围和抽题数量，支持每人独立答题</div>
+
+        <div class="config-bar">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <label>⏱ 每题限时</label>
+                <input type="number" id="timeLimit" value="30" min="5" max="120" style="width:70px;">
+                <span class="hint">秒</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <label>🔄 智能去重</label>
+                <input type="checkbox" id="enableDedup" checked>
+                <span class="hint">优先出未做过的题</span>
+            </div>
+        </div>
+
+        <div class="config-bar">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <label>📘 练习模式</label>
+                <select id="practiceMode">
+                    <option value="random">随机抽题</option>
+                    <option value="sequential">顺序练习</option>
+                    <option value="wrong">错题重练</option>
+                </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <label>🔀 随机选项</label>
+                <input type="checkbox" id="shuffleOptions" checked>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <label>🌙 夜间模式</label>
+                <input type="checkbox" id="nightMode" onchange="toggleNightMode()">
+            </div>
+        </div>
+
+        <div class="config-grid" id="config-grid"></div>
+        <button class="go-btn" onclick="goToSelect()">✓ &nbsp;配置完成，进入选题</button>
+    </div>
+
+    <!-- 选择专业页 -->
+    <div class="page" id="page-select">
+        <div class="select-title">选择答题专业</div>
+        <div class="select-sub">每位成员点击自己对应的专业按钮开始答题，答完后返回此页面</div>
+        <div class="score-summary" id="score-summary"></div>
+        <div class="subject-btns" id="subject-btns"></div>
+        <button class="finish-btn" id="finish-btn" onclick="showFinalResult()" disabled>📊 &nbsp;查看汇总结果</button>
+    </div>
+
+    <!-- 答题页 -->
+    <div class="page" id="page-quiz">
+        <div class="quiz-header">
+            <div class="qh-row">
+                <div>
+                    <div class="quiz-label" id="quiz-subject-name">工程管理</div>
+                    <div class="quiz-progress" id="quiz-progress">第 1 题 / 共 10 题</div>
+                </div>
+                <div style="text-align:right">
+                    <div class="quiz-label">当前得分</div>
+                    <div class="quiz-score-num" id="quiz-score">0</div>
+                    <div class="timer-wrap">
+                        <span class="timer-label">⏱ </span>
+                        <span class="timer-display" id="timer-display">30</span>
+                        <span class="timer-label">秒</span>
+                    </div>
+                </div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:4%"></div></div>
+        </div>
+
+        <div class="question-card">
+            <div class="q-meta">
+                <div class="q-badge" id="q-badge">单选题</div>
+                <div class="q-label" id="q-label"></div>
+            </div>
+            <div class="q-text" id="q-text">题目加载中...</div>
+            <div class="options-list" id="options-list"></div>
+            <div class="fill-box" id="fill-box">
+                <div class="fill-box-label">✓ 参考答案</div>
+                <div class="fill-box-ans" id="fill-ans"></div>
+            </div>
+        </div>
+
+        <div class="action-row" id="action-row">
+            <button class="action-btn btn-show" onclick="showAnswer()">👁 &nbsp;显示答案</button>
+        </div>
+        <div class="action-row" id="record-row" style="display:none">
+            <button class="action-btn btn-correct" onclick="recordResult(true)">✓ &nbsp;答对了</button>
+            <button class="action-btn btn-wrong" onclick="recordResult(false)">✗ &nbsp;答错了</button>
+        </div>
+        <div class="nav-row">
+            <div class="q-counter" id="q-counter"></div>
+            <div style="display:flex;gap:12px;">
+                <button class="skip-btn" onclick="confirmFinishQuiz()" style="border-color:#dc2626;color:#dc2626;">📝 提前交卷</button>
+                <button class="skip-btn" onclick="skipQ()">跳过 →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 汇总结果页 -->
+    <div class="page" id="page-result">
+        <div class="result-hero">
+            <div class="rh-emoji">🎯</div>
+            <div class="rh-title">本轮备赛答题完成！</div>
+            <div class="rh-ring">
+                <div class="rh-pct" id="r-total-pct">0%</div>
+                <div class="rh-pct-label">综合正确率</div>
+            </div>
+            <div class="rh-stats">
+                <div class="rh-stat s-total"><div class="rs-num" id="r-total">0</div><div class="rs-label">总题数</div></div>
+                <div class="rh-stat s-correct"><div class="rs-num" id="r-correct">0</div><div class="rs-label">答对</div></div>
+                <div class="rh-stat s-wrong"><div class="rs-num" id="r-wrong">0</div><div class="rs-label">答错/跳过</div></div>
+            </div>
+            <div class="rh-btns">
+                <button class="rh-btn rh-btn-review" onclick="scrollToWrong()">📋 查看错题</button>
+                <button class="rh-btn rh-btn-home" onclick="backToConfig()">⚙ 重新配置</button>
+            </div>
+        </div>
+
+        <div class="subject-results" id="subject-results"></div>
+
+        <div class="wrong-section" id="wrong-section">
+            <div class="sec-title">全部错题回顾</div>
+            <div id="wrong-list"></div>
+        </div>
+
+        <div style="margin-top:30px;">
+            <div class="sec-title">📋 答题日志</div>
+            <div class="log-table-wrap">
+                <table class="log-table">
+                    <thead><tr><th>时间</th><th>专业</th><th>题型</th><th>题目</th><th>你的答案</th><th>正确答案</th><th>结果</th><th>用时</th></tr></thead>
+                    <tbody id="log-body"></tbody>
+                </table>
+            </div>
+            <button class="export-btn" onclick="exportLog()">📥 导出日志(CSV)</button>
+        </div>
+    </div>
+
+    <!-- 嘲讽弹窗 -->
+    <div id="mock-overlay" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+        <div id="mock-box" style="background:#fff;border-radius:24px;padding:48px 56px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);max-width:480px;width:90%;transform:scale(.8);transition:transform .25s;opacity:0;">
+            <div id="mock-emoji" style="font-size:72px;margin-bottom:16px;animation:shake .4s ease;">😂</div>
+            <div id="mock-text" style="font-size:24px;font-weight:900;color:#c0392b;margin-bottom:8px;">答错啦！</div>
+            <div id="mock-sub" style="font-size:15px;color:#7a8599;margin-bottom:24px;"></div>
+            <div style="font-size:13px;color:#aaa;">即将跳到下一题...</div>
+            <div style="margin-top:16px;height:4px;background:#f0f0f0;border-radius:2px;overflow:hidden;">
+                <div id="mock-bar" style="height:100%;background:#c0392b;border-radius:2px;width:0%;transition:width 1.8s linear;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════
+        // 1. DB 题库（完整保留）
+        // ═══════════════════════════════════════════════════════
+        const DB = {
+            engineering: {
+                name: '工程管理',
+                icon: '🏗️',
+                color: '#1a6faf',
+                single: [
+                    { q: '建筑工程质量管理的核心是（）', opts: ['A.进度控制', 'B.质量控制', 'C.成本控制', 'D.安全控制'], ans: 'B' },
+                    { q: '质量管理体系中，PDCA循环的"PDCA"分别代表（）', opts: ['A.计划、执行、检查、处理', 'B.计划、设计、检查、调整', 'C.准备、执行、检查、改进', 'D.计划、实施、检查、改进'],
+                        ans: 'A' },
+                    { q: '某土方工程，计划工程量为1000m³，预算单价80元/m³，实际完成工程量1200m³，实际单价75元/m³，则费用偏差(CV)为（）元。', opts: ['A.6000', 'B.-6000',
+                            'C.5000', 'D.-5000'
+                        ], ans: 'A' },
+                    { q: '根据《建设工程质量管理条例》，屋面防水工程的最低保修期限为（）年。', opts: ['A.2年', 'B.3年', 'C.5年', 'D.10年'], ans: 'C' },
+                    { q: '隐蔽工程在隐蔽前，施工单位应当通知（）', opts: ['A.建设单位', 'B.建设行政主管部门', 'C.工程质量监督机构', 'D.建设单位和工程质量监督机构'],
+                    ans: 'D' },
+                    { q: '下列哪项不属于施工项目管理的目标控制任务？（）', opts: ['A.进度控制', 'B.质量控制', 'C.投资控制', 'D.人员招聘控制'], ans: 'D' },
+                    { q: '下列方法中，（）不是填土的压实方法。', opts: ['A.碾压法', 'B.夯击法', 'C.振动法', 'D.加压法'], ans: 'D' },
+                    { q: '模板的一般施工工艺过程（）', opts: ['A.设计、选材、加工、安装、拆除、周转', 'B.选材、设计、加工、安装、拆除、周转', 'C.设计、选材、加工、安装、养护、周转',
+                            'D.选材、设计、加工、安装、养护、周转'
+                        ], ans: 'A' },
+                    { q: '预应力混凝土楼板结构的混凝土最低强度等级不应低于（）', opts: ['A.C25', 'B.C30', 'C.C35', 'D.C40'], ans: 'B' },
+                    { q: '安全专项施工方案需要进行专家论证的是（）', opts: ['A.高度24m落地式钢管脚手架工程', 'B.跨度16m的混凝土模板支撑工程', 'C.开挖深度8m的基坑工程',
+                            'D.跨度32m的钢结构安装工程'
+                        ], ans: 'C' },
+                    { q: '质量检验的"三检制"是指（）', opts: ['A.自检、互检、专检', 'B.初检、复检、终检', 'C.自检、抽检、全检', 'D.入场检验、过程检验、最终检验'],
+                    ans: 'A' },
+                    { q: '对于超过一定规模的危险性较大的分部分项工程，专项方案应当由（）组织召开专家论证会。', opts: ['A.施工单位', 'B.建设单位', 'C.监理单位',
+                            'D.勘察设计单位'
+                        ], ans: 'A' },
+                    { q: '下列哪项不属于工程质量问题的分类（）', opts: ['A.一般质量问题', 'B.严重质量问题', 'C.质量事故', 'D.质量隐患'], ans: 'D' },
+                    { q: '工程竣工验收合格后，建设单位应在（）日内向工程所在地的县级以上地方人民政府建设行政主管部门备案。', opts: ['A.7', 'B.15', 'C.20',
+                            'D.30'
+                        ], ans: 'B' },
+                    { q: '下列哪项不属于工程质量评定等级（）', opts: ['A.优良', 'B.合格', 'C.不合格', 'D.基本合格'], ans: 'D' },
+                    { q: '质量问题的处理程序不包括（）', opts: ['A.问题发现', 'B.问题分析', 'C.责任认定', 'D.奖励措施'], ans: 'D' },
+                    { q: '以下哪个不是施工项目目标动态控制的纠偏措施？（）', opts: ['A.组织措施', 'B.经济措施', 'C.法律措施', 'D.技术措施'], ans: 'C' },
+                    { q: '见证取样检测是检测试样在（）见证下，由施工单位有关人员现场取样，并委托检测机构所进行的检测。', opts: ['A.监理单位具有见证人员证书的人员',
+                            'B.建设单位授权的具有见证人员证书的人员', 'C.监理单位或建设单位具备见证资格的人员', 'D.设计单位项目负责人'
+                        ], ans: 'C' },
+                    { q: '防水混凝土水平构件表面宜覆盖塑料薄膜或双层草袋浇水养护，竖向构件宜采用喷涂养护液进行养护，养护时间不应少于（）d。', opts: ['A.7', 'B.14',
+                            'C.21', 'D.28'
+                        ], ans: 'B' },
+                    { q: '施工现场临时用电设备在5台及以上或设备总容量在50kW及以上者，应编制（）。', opts: ['A.施工组织设计', 'B.临时用电施工组织设计',
+                            'C.安全专项方案', 'D.应急预案'
+                        ], ans: 'B' },
+                    { q: '后浇带应在其两侧混凝土龄期达到（）d后再施工。', opts: ['A.14', 'B.28', 'C.42', 'D.56'], ans: 'C' },
+                    { q: '下列属于新型模板支撑体系技术创新的是（）', opts: ['A.木模板重复利用率低体系', 'B.铝合金模板早拆体系', 'C.随意搭设支撑',
+                            'D.传统钢管扣件支撑'
+                        ], ans: 'B' },
+                    { q: '检验批质量验收，一般项目合格点数占比最低标准为（）', opts: ['A.70%', 'B.80%', 'C.90%', 'D.95%'], ans: 'B' },
+                    { q: '拆除跨度为7m的现浇钢筋混凝土梁的底模及支架时，其混凝土强度至少是混凝土设计抗压强度标准值的（）', opts: ['A.50%', 'B.75%', 'C.85%',
+                            'D.100%'
+                        ], ans: 'B' },
+                    { q: '装配式建筑评价标准中，不属于核心评价指标的是（）', opts: ['A.预制率', 'B.装配率', 'C.现浇率', 'D.标准化设计水平'], ans: 'C' },
+                    { q: '深基坑工程中，属于智能监测技术的是（）', opts: ['A.人工钢尺量测', 'B.无线传感实时在线监测', 'C.目测巡视', 'D.定期人工记录'],
+                    ans: 'B' },
+                    { q: 'BIM技术在施工阶段的核心应用不包括（）', opts: ['A.三维可视化交底', 'B.施工进度模拟', 'C.直接替代人工施工', 'D.碰撞检查与优化'],
+                        ans: 'C' },
+                    { q: '下列不属于建筑工业化核心技术的是（）', opts: ['A.装配式混凝土结构', 'B.预制构件工厂化生产', 'C.现场湿作业为主施工',
+                            'D.装配整体式施工'
+                        ], ans: 'C' },
+                    { q: '下列属于低碳建筑关键技术的是（）', opts: ['A.大量使用高耗能材料', 'B.光伏建筑一体化（BIPV）', 'C.增加现场扬尘排放', 'D.延长施工周期'],
+                        ans: 'B' },
+                    { q: '工程建设领域推行的"一网通办、数字化审批"属于（）创新', opts: ['A.施工技术', 'B.工程管理数字化', 'C.结构体系', 'D.材料'],
+                    ans: 'B' },
+                    { q: '现场文明施工中，"五牌一图"不包括下列哪一项？（）', opts: ['A.工程概况牌', 'B.安全生产牌', 'C.施工平面图', 'D.材料进场计划牌'],
+                        ans: 'D' },
+                    { q: '利用无人机进行施工现场管理，不能实现的功能是（）', opts: ['A.场地巡查', 'B.进度航拍对比', 'C.直接浇筑混凝土', 'D.安全隐患排查'],
+                        ans: 'C' },
+                    { q: '下列属于新型模板支撑体系技术创新的是（）', opts: ['A.木模板重复利用率低体系', 'B.铝合金模板早拆体系', 'C.随意搭设支撑',
+                            'D.传统钢管扣件支撑'
+                        ], ans: 'B' },
+                    { q: '项目前期策划中，资源配置计划的核心内容不包括（）', opts: ['A.人力配置', 'B.机械配置', 'C.材料配置', 'D.竣工结算'], ans: 'D' },
+                    { q: '建筑工程危大工程专项方案需经（）审批后方可实施', opts: ['A.项目技术负责人', 'B.企业技术负责人', 'C.项目经理', 'D.监理员'],
+                    ans: 'B' },
+                    { q: '项目前期全周期策划的核心输出文件是（）', opts: ['A.施工组织设计', 'B.项目策划书', 'C.质量验收记录', 'D.进度日报'], ans: 'B' },
+                    { q: '混凝土立方体抗压强度标准值是指按照标准方法制作养护的边长为（）mm的立方体试件。', opts: ['A.70.7', 'B.100', 'C.150',
+                            'D.200'
+                        ], ans: 'C' },
+                    { q: '水准仪的主要功能是（）', opts: ['A.测量两点间的高差', 'B.测量水平角', 'C.测量竖直角', 'D.测量距离'], ans: 'A' },
+                    { q: '建筑工程中，外墙抹灰的总厚度一般不应大于（）', opts: ['A.15mm', 'B.20mm', 'C.25mm', 'D.30mm'], ans: 'B' },
+                    { q: '建筑地面工程中，水泥砂浆面层的强度等级不应小于（）', opts: ['A.M5', 'B.M10', 'C.M15', 'D.M20'], ans: 'C' },
+                    { q: '下列不属于安装工程主要分类的是（）', opts: ['A.机械设备安装工程', 'B.电气设备安装工程', 'C.建筑装饰装修工程', 'D.化工设备安装工程'],
+                        ans: 'C' },
+                    { q: '下列关于管道安装说法错误的是（）', opts: ['A.管道安装前必须进行清洗和除锈', 'B.管道连接方式有螺纹连接、法兰连接、焊接连接等',
+                            'C.管道安装完成后需要进行压力试验', 'D.管道安装时可以随意弯曲'
+                        ], ans: 'D' },
+                    { q: '下列关于电气设备安装说法错误的是（）', opts: ['A.电气设备安装前必须进行检查和测试', 'B.电气设备安装后需要进行接地测试',
+                            'C.电气设备安装时可以忽略安全距离', 'D.电气设备安装完成后需要进行系统调试'
+                        ], ans: 'C' },
+                    { q: '下列关于通风空调系统安装说法错误的是（）', opts: ['A.通风空调系统安装前必须进行材料验收', 'B.风管安装完成后需要进行严密性试验',
+                            'C.风机安装完成后需要进行试运行', 'D.通风空调系统安装可以不考虑空间布局'
+                        ], ans: 'D' },
+                    { q: '安装工程施工中，常用的起重设备不包括（）', opts: ['A.轮胎起重机', 'B.汽车起重机', 'C.桥式起重机', 'D.桩式起重机'],
+                    ans: 'D' },
+                    { q: '安装工程施工中，常用的焊接方法不包括（）', opts: ['A.电弧焊', 'B.气焊', 'C.激光焊', 'D.钻孔'], ans: 'D' },
+                    { q: '设备安装前，应检查设备的基础是否符合以下哪个条件？（）', opts: ['A.平整度', 'B.坡度', 'C.设计要求', 'D.基础面积'], ans: 'C' },
+                    { q: '设备安装施工中，下列哪种设备属于静置设备？（）', opts: ['A.离心泵', 'B.通风机', 'C.压缩机', 'D.储罐'], ans: 'D' },
+                    { q: '某安装工程中需使用临时支撑，以下哪种情况不属于必须设置临时支撑的场景？（）', opts: ['A.吊装重型设备', 'B.钢结构焊接前', 'C.地脚螺栓预埋',
+                            'D.管道系统压力测试'
+                        ], ans: 'D' },
+                    { q: '电气安装中，三相四线制接线时，以下哪项操作易导致短路？（）', opts: ['A.A相接火线，B相接零线', 'B.A相接火线，C相接零线',
+                            'C.A相接火线，B相接火线', 'D.A相接火线，C相接火线'
+                        ], ans: 'C' },
+                    { q: '以下哪种检测方法适用于安装工程中的管道泄漏检测？（）', opts: ['A.超声波检测', 'B.磁粉检测', 'C.气相色谱分析', 'D.热成像检测'],
+                        ans: 'A' },
+                    { q: '安装管道时，若采用螺纹连接，以下哪种做法不符合规范要求？（）', opts: ['A.清除螺纹上的油污', 'B.使用密封填料', 'C.连接后直接紧固',
+                            'D.安装后进行水压试验'
+                        ], ans: 'C' },
+                    { q: '根据《中华人民共和国建筑法》，建筑施工企业必须建立、健全（）制度，加强对建筑安全生产的管理。', opts: ['A.质量责任', 'B.安全生产',
+                            'C.环境保护', 'D.职工培训'
+                        ], ans: 'B' },
+                    { q: '组织进行质量管理体系内部审核的主要目的是（）', opts: ['A.寻求外部认证', 'B.评估体系运行的符合性和有效性', 'C.替代管理评审',
+                            'D.处理客户投诉'
+                        ], ans: 'B' },
+                    { q: '当遇有（）级以上大风、大雾、大雨和大雪天气时，应暂停脚手架搭设作业。', opts: ['A.5', 'B.6', 'C.8', 'D.10'], ans: 'B' },
+                    { q: '工程质量事故按事故造成损失的程度分级，重大事故是指造成（）的事故。', opts: ['A.3人以下死亡，或者10人以下重伤，或者100万元以上1000万元以下直接经济损失',
+                            'B.3人以上10人以下死亡，或者10人以上50人以下重伤，或者1000万元以上5000万元以下直接经济损失',
+                            'C.10人以上30人以下死亡，或者50人以上100人以下重伤，或者5000万元以上1亿元以下直接经济损失',
+                            'D.30人以上死亡，或者100人以上重伤，或者1亿元以上直接经济损失'
+                        ], ans: 'C' },
+                    { q: '对已发生质量缺陷的工程部位，采取必要的措施使其恢复到符合设计要求的标准，这种处理方法称为（）', opts: ['A.返修', 'B.返工', 'C.报废',
+                            'D.补强'
+                        ], ans: 'A' },
+                    { q: '招标人以招标公告的方式邀请不特定的法人或者组织来投标，这种招标方式称为（）', opts: ['A.公开招标', 'B.邀请招标', 'C.议标',
+                            'D.定向招标'
+                        ], ans: 'A' },
+                    { q: '因（）造成的工期延误，工期不能顺延。', opts: ['A.发包人不能按合同约定提供开工条件', 'B.发包人不能按合同约定提供工程预付款，致使工程不能正常进行',
+                            'C.一周内非承包人原因停水、停电、停气造成停工累计6小时', 'D.不可抗力'
+                        ], ans: 'C' },
+                    { q: '项目管理的核心任务是（）', opts: ['A.成本控制', 'B.质量控制', 'C.目标控制', 'D.进展控制'], ans: 'C' }
+                ],
+                multi: [
+                    { q: '工程中"三检制"是指（）', opts: ['A.自检', 'B.互检', 'C.专检', 'D.抽检', 'E.巡检'], ans: 'ABC' },
+                    { q: '参加单位工程质量竣工验收的单位为（）等。', opts: ['A.建设单位', 'B.施工单位', 'C.设计单位', 'D.勘察单位', 'E.监理单位'],
+                        ans: 'ABCDE' },
+                    { q: '工程所用的原材料、半成品、构（配）件、设备等产品进场验收时应检查每批产品的（）等，并按国家有关标准规定进行复验。', opts: ['A.订购合同',
+                            'B.质量合格证书', 'C.使用说明书', 'D.性能检验报告', 'E.进口产品的商检报告及证件'
+                        ], ans: 'BCDE' },
+                    { q: '标准分为（）标准。', opts: ['A.国家', 'B.部办', 'C.行业', 'D.地方', 'E.企业'], ans: 'ACDE' },
+                    { q: '施工组织设计应及时修改或补充的情况有（）', opts: ['A.工程设计有重大修改', 'B.主要施工方法有重大调整', 'C.主要施工资源配置有重大调整',
+                            'D.施工环境有重大改变', 'E.项目技术负责人变更'
+                        ], ans: 'ABCD' },
+                    { q: '施工中可能降低混凝土结构强度的因素有（）', opts: ['A.水灰比大', 'B.养护时间短', 'C.混凝土发生离析', 'D.振捣时间短',
+                            'E.养护时洒水太多'
+                        ], ans: 'ABCD' },
+                    { q: '工程竣工验收应当具备的条件是（）', opts: ['A.有施工单位签署的工程保修书', 'B.有勘察、监理、施工单位分别签署的质量合格文件',
+                            'C.有工程使用的主要建筑材料，构配件和设备的进场试验报告', 'D.有完整的技术档案和施工管理资料',
+                            'E.建设主管部门及工程质量监督机构责令整改的问题全部整改完毕'
+                        ], ans: 'ACDE' },
+                    { q: '下列属于施工成本管理原则的有（）', opts: ['A.开源与节流相结合', 'B.全面管理原则', 'C.目标管理原则', 'D.责权利相结合原则'],
+                        ans: 'ABCD' },
+                    { q: '施工项目进度比较的方法包括（）', opts: ['A.横道图比较法', 'B.S形曲线比较法', 'C.香蕉形曲线比较法', 'D.列表比较法'],
+                        ans: 'ABCD' },
+                    { q: '施工质量控制中，现场质量检查的方法包括（）', opts: ['A.目测法', 'B.实测法', 'C.试验法', 'D.分析法'], ans: 'ABC' },
+                    { q: '施工合同文件的组成及解释顺序，下列说法正确的有（）', opts: ['A.合同协议书优先于中标通知书', 'B.专用合同条款优先于通用合同条款',
+                            'C.图纸优先于技术标准和要求', 'D.投标函及其附录优先'
+                        ], ans: 'AB' },
+                    { q: '下列属于施工机械台班单价组成的有（）', opts: ['A.折旧费', 'B.大修理费', 'C.安拆费及场外运费', 'D.燃料动力费'], ans: 'ABCD' },
+                    { q: '下列属于工程质量事故处理方案类型的有（）', opts: ['A.修补处理', 'B.返工处理', 'C.不做处理', 'D.报废处理'], ans: 'ABCD' },
+                    { q: '根据《建设工程安全生产管理条例》，施工单位应当对哪些人员进行安全教育培训？（）', opts: ['A.新入场工人', 'B.换岗工人',
+                            'C.采用新技术、新工艺的作业人员', 'D.项目管理人员'
+                        ], ans: 'ABCD' },
+                    { q: '关于施工项目经理的权限，下列说法正确的有（）', opts: ['A.参与项目招标和合同签订', 'B.参与组建项目经理部', 'C.主持项目经理部工作',
+                            'D.决定项目所有的资金使用'
+                        ], ans: 'ABC' },
+                    { q: '根据施工合同示范文本，下列属于合同签订阶段相关内容说法正确的有（）', opts: ['A.合同当事人应具备相应履约资质与能力',
+                            'B.中标通知书发出后，30日内应订立书面合同', 'C.不得签订背离招投标实质性内容的补充协议', 'D.合同价款可随意口头约定变更',
+                            'E.签约合同价即为最终竣工结算总价'
+                        ], ans: 'ABC' },
+                    { q: '关于工程项目风险管理，下列属于风险应对策略的有（）', opts: ['A.风险规避', 'B.风险减轻', 'C.风险转移', 'D.风险自留'],
+                        ans: 'ABCD' },
+                    { q: '施工现场环境保护措施包括（）', opts: ['A.洒水降尘', 'B.噪声控制', 'C.建筑垃圾分类处理', 'D.光污染控制'], ans: 'ABCD' },
+                    { q: '依据《建设工程安全生产管理条例》，施工单位必须开展安全生产教育培训的人员有（）', opts: ['A.特种作业人员', 'B.节假日返岗作业人员',
+                            'C.施工现场临时务工人员', 'D.离岗半年以上复工人员', 'E.企业专职安全管理人员'
+                        ], ans: 'ACDE' },
+                    { q: '施工成本核算的基本内容包括（）', opts: ['A.人工费核算', 'B.材料费核算', 'C.机械使用费核算', 'D.措施费核算'], ans: 'ABCD' },
+                    { q: '单代号网络计划的绘图规则是（）', opts: ['A.网络图中不允许出现有重复编号',
+                            'B.在网络图中除起点节点和终点节点外，不允许出现其他没有内向箭线的工作节点和没有外向箭线的工作节点',
+                            'C.在网络图的开始和结束增加虚拟的起点节点和终点节点', 'D.在网络图中不允许出现循环回路', 'E.后续节点的编号不一定大于前导节点编号'
+                        ], ans: 'ABCD' },
+                    { q: '绘制网络图的基本原则是（）', opts: ['A.在网络图中不允许出现循环回路', 'B.在网络图中不允许出现没有开始节点的工作',
+                            'C.在网络图中不允许出现带有双向箭头或无箭头的工作', 'D.在网络图中不允许出现没有终点节点的工作',
+                            'E.不一定能正确地表达各项工作之间的相互制约和相互依赖的关系'
+                        ], ans: 'ABCD' },
+                    { q: '合同交底的内容有（）', opts: ['A.对合同的主要内容做出解释和说明', 'B.将各种合同事件的责任分解落实到各工程小组或分包人',
+                            'C.对合同价格作分析', 'D.对合同要求的施工工期作分析', 'E.在合同实施前与其他相关的各方面落实各种安排'
+                        ], ans: 'ABE' },
+                    { q: '招标人应对投标人的资格进行预审，资格预审应主要审查潜在投标人或者投标人是否符合（）', opts: ['A.具有独立订立合同的权利',
+                            'B.具有履行合同的能力', 'C.没有处于被责令停业，投标资格被取消的状态', 'D.5年内没有重大工程质量问题',
+                            'E.法律法规规定的其他资格条件'
+                        ], ans: 'ABDE' },
+                    { q: '在国际上，对项目经理的地位、作用和特征的描述是（）', opts: ['A.项目经理是项目管理班子的负责人', 'B.项目经理是一个技术岗位',
+                            'C.项目经理是项目组织系统中的管理者，具有人事权、财权、物资采购权', 'D.项目经理的主要任务是项目目标的控制和组织协调',
+                            'E.项目经理是企业法定代表人在项目上的代表人'
+                        ], ans: 'AD' },
+                    { q: '下列哪些属于施工工艺事故的常见原因？（）', opts: ['A.施工方案不合理', 'B.技术交底不清', 'C.监理工程师失职', 'D.施工操作不规范',
+                            'E.测量放线错误'
+                        ], ans: 'ABDE' },
+                    { q: '质量事故调查组的主要职责包括？（）', opts: ['A.收集事故相关资料', 'B.现场勘查', 'C.询问相关人员', 'D.判定事故性质和等级',
+                            'E.提出处理建议'
+                        ], ans: 'ABCDE' },
+                    { q: '质量事故处理的基本原则包括？（）', opts: ['A.安全第一原则', 'B.实事求是原则', 'C.责任追究原则', 'D.经济合理原则',
+                            'E.可追溯原则'
+                        ], ans: 'ABCDE' },
+                    { q: '导致原材料质量不合格的原因可能包括？（）', opts: ['A.进场材料检验不严', 'B.储存条件不当', 'C.供应单位资质问题',
+                            'D.违反材料代用规定', 'E.施工现场管理混乱'
+                        ], ans: 'ABCDE' },
+                    { q: '在质量事故预防措施中，属于加强事前预防的做法有？（）', opts: ['A.编制详细的质量计划', 'B.严格执行图纸会审制度', 'C.加强原材料进场检验',
+                            'D.定期进行质量检查', 'E.完善质量奖惩制度'
+                        ], ans: 'ABC' },
+                    { q: '质量事故报告应包含哪些信息？（）', opts: ['A.事故发生的具体时间和地点', 'B.事故发生的直接原因和间接原因分析',
+                            'C.事故造成的损失情况（包括直接和间接损失）', 'D.初步采取的应急措施', 'E.事故责任人的初步认定'
+                        ], ans: 'ABCDE' },
+                    { q: '"机"因素在质量事故中可能表现为？（）', opts: ['A.施工机械性能不良', 'B.检测仪器精度不够', 'C.施工人员操作机械失误',
+                            'D.设备选型不当', 'E.维护保养不到位'
+                        ], ans: 'ABDE' },
+                    { q: '质量事故处理方案应包括哪些内容？（）', opts: ['A.具体的处理方法和技术措施', 'B.处理所需的资源（人力、物力、财力）',
+                            'C.处理的起止时间计划', 'D.质量处理效果的检查验收标准', 'E.处理过程中的安全注意事项'
+                        ], ans: 'ABCDE' },
+                    { q: '质量管理中"控制"职能在事故分析中的作用体现在？（）', opts: ['A.识别和分析事故发生的原因', 'B.评估事故的影响范围和程度',
+                            'C.监督事故处理方案的执行情况', 'D.验证事故处理的效果', 'E.总结事故教训，完善质量控制体系'
+                        ], ans: 'ABCDE' },
+                    { q: '下列哪些行为可能引发管理事故？（）', opts: ['A.质量管理体系不健全', 'B.质量责任制不落实', 'C.监理不到位',
+                            'D.资金拨付不及时影响材料质量', 'E.管理层决策失误'
+                        ], ans: 'ABCDE' },
+                    { q: '建筑物沉降观测的水准点必须满足（）', opts: ['A.足够的稳定性', 'B.观测精度', 'C.两点间距离较近', 'D.两点间距离较远',
+                            'E.便于保护'
+                        ], ans: 'ABE' },
+                    { q: '以下关于建筑节能工程的说法正确的有（）', opts: ['A.建筑节能工程为单位工程中的一个分部工程',
+                            'B.建筑节能工程采用的材料、设备等，必须符合设计要求及国家有关标准的规定', 'C.墙体节能工程应在主体结构及基层质量验收合格后进行',
+                            'D.当建筑节能工程验收不合格时，应重新组织验收', 'E.建筑节能工程的隐蔽工程验收内容应包括保温层附着的基层及其表面处理'
+                        ], ans: 'ABCDE' },
+                    { q: '建筑防水工程的主要功能包括（）', opts: ['A.防止雨水、雪水渗透', 'B.防止地下水渗透', 'C.防止室内水汽渗透', 'D.防止屋面积水',
+                            'E.防止外墙渗漏'
+                        ], ans: 'ABCDE' },
+                    { q: '建筑工程中，影响施工质量的因素主要有（）', opts: ['A.人', 'B.材料', 'C.机械', 'D.方法', 'E.环境'], ans: 'ABCDE' },
+                    { q: '文明施工要求外部环境应做到"五牌一图"齐全，即（）', opts: ['A.施工总平面图', 'B.安全警示牌', 'C.安民告示牌', 'D.工程规模和质量要求牌',
+                            'E.施工进度牌'
+                        ], ans: 'ABCE' },
+                    { q: '下列建筑工程材料与构件中，按规范要求必须进场抽样复验的有（）', opts: ['A.钢筋', 'B.商品混凝土', 'C.防水卷材', 'D.普通砌筑砂浆',
+                            'E.外墙保温板材'
+                        ], ans: 'ABCE' },
+                    { q: '下列现行工程标准与对应工程类别匹配无误的有（）', opts: ['A.GB 50204-2015 混凝土结构工程', 'B.GB 55030-2022 建筑防水工程',
+                            'C.GB 50411-2019 建筑节能工程', 'D.GB 50210-2018 装饰装修工程', 'E.GB 55007-2021 钢结构工程'
+                        ], ans: 'ABCD' },
+                    { q: '每一遍抹灰前，必须对前一遍的抹灰质量（）检查处理。', opts: ['A.强度', 'B.空鼓', 'C.裂缝', 'D.起砂'], ans: 'BCD' },
+                    { q: '水泥砂浆防水层的基层表面应（），并充分湿润无积水。', opts: ['A.坚实', 'B.平整', 'C.粗糙', 'D.光洁', 'E.洁净'], ans: 'ABE' },
+                    { q: '现场计算临时总用水量应包括（）', opts: ['A.施工用水量', 'B.消防用水量', 'C.施工机械用水量', 'D.商品混凝土拌合用水量',
+                            'E.临水管道水量损失量'
+                        ], ans: 'ABCE' },
+                    { q: '下列情形中，会造成混凝土实体强度达不到设计要求的有（）', opts: ['A.原材料砂石含泥量超标', 'B.浇筑后养护温度过低', 'C.下料高度过高产生离析',
+                            'D.振捣密实度把控到位', 'E.水泥存放受潮结块'
+                        ], ans: 'ABCE' },
+                    { q: '井点降水的类型主要有（）等。', opts: ['A.深井井点', 'B.轻型井点', 'C.喷射井点', 'D.管井井点', 'E.浅井井点'],
+                    ans: 'ABCD' },
+                    { q: '泥浆护壁成孔灌注桩施工时常宜发生的工程事故有（）', opts: ['A.断桩', 'B.孔壁坍塌', 'C.孔底隔层或夹砂', 'D.斜孔', 'E.流砂'],
+                        ans: 'ABCDE' },
+                    { q: '模板工程设计的安全性原则是指模板要具有足够的（）', opts: ['A.强度', 'B.实用性', 'C.刚度', 'D.经济性', 'E.稳固（定）性'],
+                        ans: 'ACE' },
+                    { q: '混凝土施工缝留置位置正确的有（）', opts: ['A.柱在梁、板顶面', 'B.单向板在平行于板长边的任何位置', 'C.有主次梁的楼板在次梁跨中1/3范围内',
+                            'D.墙在纵横墙的交接处', 'E.双向受力板按设计要求确定'
+                        ], ans: 'ACDE' },
+                    { q: '建设工程竣工报验前，需满足的验收必备条件有（）', opts: ['A.完成设计图纸与合同约定全部施工内容', 'B.具备完整工程技术档案与施工管控资料',
+                            'C.主要建材、设备均留存合格检测资料', 'D.各方签署齐全工程质量合格证明文件', 'E.施工单位出具临时使用承诺书'
+                        ], ans: 'ABCD' },
+                    { q: '属于新型绿色建材的有（）', opts: ['A.加气混凝土砌块', 'B.透水混凝土', 'C.再生砖', 'D.高污染黏土砖', 'E.节能门窗'],
+                        ans: 'ABCE' },
+                    { q: '数字化建造技术主要包括（）', opts: ['A.3D建筑打印', 'B.数字放样', 'C.智能测量', 'D.机器人施工', 'E.手工绘图'],
+                        ans: 'ABCD' },
+                    { q: '推动工程建设科技创新的核心政策导向包括（）', opts: ['A.推广智能建造', 'B.推进新型建筑工业化', 'C.鼓励绿色低碳技术',
+                            'D.支持数字化转型', 'E.限制新技术应用'
+                        ], ans: 'ABCD' },
+                    { q: '智能建造对一级建造师执业能力的新要求包括（）', opts: ['A.BIM应用能力', 'B.数字化管理能力', 'C.智能设备操作与管理',
+                            'D.绿色施工技术掌握', 'E.仅依赖传统经验即可'
+                        ], ans: 'ABCD' },
+                    { q: '属于建筑节能与绿色施工技术的有（）', opts: ['A.外墙外保温技术', 'B.再生骨料混凝土', 'C.夜间强光照明', 'D.扬尘在线监测与喷淋',
+                            'E.建筑垃圾资源化利用'
+                        ], ans: 'ABDE' },
+                    { q: '装配式混凝土建筑的核心优势包括（）', opts: ['A.质量更可控', 'B.施工速度快', 'C.现场湿作业少', 'D.人工依赖度降低',
+                            'E.完全无需现场管理'
+                        ], ans: 'ABCD' },
+                    { q: '下列属于工程质量事前控制措施的有（）', opts: ['A.图纸会审与设计交底', 'B.专项施工方案审批', 'C.隐蔽工程验收', 'D.原材料进场复验',
+                            'E.不合格项返工整改'
+                        ], ans: 'ABD' },
+                    { q: '危大工程专项施工方案的管理要求包括（）', opts: ['A.由专项技术人员编制', 'B.企业技术负责人审批', 'C.超过一定规模需组织专家论证',
+                            'D.监理工程师审查签字', 'E.实施后再补充编制方案'
+                        ], ans: 'ABCD' },
+                    { q: '智能建造与数字化施工包含的应用有（）', opts: ['A.BIM碰撞检查', 'B.无人机现场巡查', 'C.人工手写纸质台账',
+                            'D.劳务实名制数字化管理', 'E.在线进度动态管控'
+                        ], ans: 'ABDE' },
+                    { q: '影响混凝土施工质量的环境因素有（）', opts: ['A.高温暴晒天气', 'B.雨季雨水冲刷', 'C.现场扬尘污染', 'D.夜间低温冻害',
+                            'E.作业人员技术水平'
+                        ], ans: 'ABCD' }
+                ],
+                fill: [
+                    { q: '（）技术是建筑工业化的核心，通过工厂预制构件、现场装配施工，实现工程质量提升和施工效率提高。', ans: '装配式建筑' },
+                    { q: '根据《建筑与市政工程绿色施工评价标准》GB/T50640-2023，评价指标包括六个方面：环境保护、资源节约、（）、技术创新、基本规定和评价框架体系。',
+                        ans: '节能减排' },
+                    { q: '工法的主要内容包括序言、工法特点、适用范围、工艺原理、（）、材料与设备、质量控制、安全措施、环境保护措施、效益分析和应用实例等11部分。',
+                        ans: '施工工艺流程及操作要点' },
+                    { q: '国家鼓励建筑节能工程施工中采用四新技术，四新包括（）新工艺、新材料、新设备。', ans: '新技术' },
+                    { q: '一级建造师在智能建造项目中，需具备（）应用能力，实现施工过程的三维可视化、进度模拟与碰撞检查。', ans: 'BIM' },
+                    { q: '施工现场"四口"是指楼梯口、电梯井口、预留洞口和（）。', ans: '通道口' },
+                    { q: '工程网络计划中，关键线路是指由关键工作组成的线路，其总持续时间（）。', ans: '最长' },
+                    { q: '施工项目成本控制中，按照我国现行规定，企业管理费属于（）费。', ans: '间接' },
+                    { q: '双代号时标网络计划中，波形线表示工作的（）。', ans: '自由时差' },
+                    { q: '全面质量管理的核心理念是以（）为关注焦点。', ans: '顾客' },
+                    { q: '混凝土结构施工缝的留置位置应在结构受（）较小且便于施工的部位。', ans: '剪力' },
+                    { q: '根据《建筑施工安全检查标准》，检查评定等级分为优良、合格和（）。', ans: '不合格' },
+                    { q: '建设工程项目实施阶段策划的主要任务是确定如何组织该项目的（）。', ans: '开发和建设' },
+                    { q: '施工招标文件中的工程量清单是投标报价的重要依据，其准确性由（）负责。', ans: '招标人' },
+                    { q: '质量管理的三大基本支柱是：质量策划、质量控制和（）。', ans: '质量改进' },
+                    { q: '施工质量控制分为事前控制、______、事后控制三个阶段。', ans: '事中控制' },
+                    { q: '质量问题的处理原则是：______、______、______和______。', ans: '安全可靠、不留隐患、满足使用功能、经济合理' },
+                    { q: '质量管理体系的文件结构通常分为四个层次：质量手册、______、______和______。', ans: '程序文件、作业指导书、质量记录' },
+                    { q: '工程质量验收的基本要求是：______、______、______和______。', ans: '符合设计要求、符合规范标准、资料完整、观感合格' },
+                    { q: '建设工程施工质量验收中，（）是工程质量验收的最小基本单元。', ans: '检验批' },
+                    { q: '施工项目进度计划的表示方法（）、关键日期表、垂直图（速度图）、网络图四种。', ans: '横道图' },
+                    { q: '工程项目招标签约阶段包括（）、评标、定标、签订合同四个部分。', ans: '开标' },
+                    { q: '常见的工程项目招标的方式有（）、邀请招标、议标、两阶段招标。', ans: '公开招标' },
+                    { q: '建设项目按照工程组成单元可以划分为（）、单位工程、分部工程、分项工程四部分。', ans: '建设项目' },
+                    { q: '工程项目招标过程按照工作内容不同，可以划分为：（）、组织招标阶段、签约阶段、合同履行和执行阶段四个阶段。', ans: '策划决策阶段' },
+                    { q: '施工方项目管理目标：（）、（）、（）、（）。', ans: '施工进度、质量、安全、成本' },
+                    { q: '施工项目竣工结算的内容包括单位工程竣工结算书、单项工程综合结算书、项目总结算书、（）四个方面。', ans: '竣工结算汇总资料' },
+                    { q: '使用水平尺测量安装水平度时，应保持水平尺________，以获得准确读数。', ans: '平稳放置' },
+                    { q: '管道系统压力试验时，升压应缓慢，达到试验压力后，稳压______分钟，检查管道各部位有无泄漏和变形。', ans: '10' },
+                    { q: '安全生产中，"三不伤害"原则指不伤害______、不伤害______、不被他人伤害。', ans: '自己、他人' }
+                ]
+            },
+            finance: {
+                name: '财务管理',
+                icon: '💰',
+                color: '#166534',
+                single: [
+                    { q: '建筑企业收到业主支付的工程预付款时，应贷记的会计科目是（）', opts: ['A.预收账款', 'B.合同负债', 'C.其他应付款', 'D.工程结算'],
+                        ans: 'B' },
+                    { q: '公司本年财务工作将重点围绕（）开展。', opts: ['A.会计核算基础工作', 'B.税务筹划与合规', 'C.强化财务管理、加强资金管控',
+                            'D.财务报表编制'
+                        ], ans: 'C' },
+                    { q: '建筑企业支付投标保证金时，应借记的会计科目是（）', opts: ['A.预付账款', 'B.其他应收款', 'C.管理费用', 'D.财务费用'],
+                    ans: 'B' },
+                    { q: '下列各项中，属于建筑企业"合同资产"典型特征的是（）', opts: ['A.无条件的收款权', 'B.有条件的收款权', 'C.已经收到的工程款',
+                            'D.已经到期的质保金'
+                        ], ans: 'B' },
+                    { q: '建筑企业跨地区提供建筑服务，增值税应在哪里预缴？（）', opts: ['A.机构所在地', 'B.服务发生地', 'C.企业注册地', 'D.合同签订地'],
+                        ans: 'B' },
+                    { q: '建筑企业购入一台施工设备，取得的增值税专用发票上注明的进项税额，正确的处理是（）', opts: ['A.计入设备成本', 'B.作为进项税额抵扣',
+                            'C.计入管理费用', 'D.计入营业外支出'
+                        ], ans: 'B' },
+                    { q: '建筑企业施工现场搭建的临时办公室，应通过（）科目核算。', opts: ['A.固定资产', 'B.临时设施', 'C.周转材料', 'D.在建工程'],
+                        ans: 'B' },
+                    { q: '下列项目中，属于建筑企业"周转材料"的是（）', opts: ['A.钢筋', 'B.水泥', 'C.脚手架', 'D.塔吊'], ans: 'C' },
+                    { q: '建筑企业收到业主支付的履约保证金，应贷记的会计科目是（）', opts: ['A.合同负债', 'B.预收账款', 'C.其他应付款', 'D.长期应付款'],
+                        ans: 'C' },
+                    { q: '向外部提供旨在提升公司形象及扩大知名度的纪念品，可计入（）科目。', opts: ['A.销售费用', 'B.合同履约成本', 'C.管理费用',
+                            'D.财务费用'
+                        ], ans: 'A' },
+                    { q: '建筑企业支付银行贷款利息时，应借记的会计科目是（）', opts: ['A.管理费用', 'B.财务费用', 'C.工程施工', 'D.营业外支出'],
+                        ans: 'B' },
+                    { q: '建筑企业采用简易计税方法提供建筑服务，适用的增值税征收率为（）', opts: ['A.3%', 'B.6%', 'C.9%', 'D.13%'], ans: 'A' },
+                    { q: '下列各项中，属于建筑企业"间接费用"的是（）', opts: ['A.钢筋采购成本', 'B.施工人员工资', 'C.项目管理人员工资', 'D.分包工程款'],
+                        ans: 'C' },
+                    { q: '建筑企业出售一台闲置的塔吊，应通过（）科目核算处置损益。', opts: ['A.营业外收入', 'B.营业外支出', 'C.资产处置损益',
+                            'D.其他业务收入'
+                        ], ans: 'C' },
+                    { q: '企业在进行债权债务清理时，对于确实无法支付的应付款项，经批准后应转入的会计科目是（）', opts: ['A.资本公积', 'B.营业外收入',
+                            'C.主营业务收入', 'D.其他业务收入'
+                        ], ans: 'B' },
+                    { q: '建筑企业领用外购的钢材用于自建办公楼，增值税进项税额的处理是（）', opts: ['A.做进项税额转出', 'B.正常抵扣，无需转出', 'C.分期抵扣',
+                            'D.计入办公楼成本'
+                        ], ans: 'B' },
+                    { q: '下列项目中，应在建筑企业资产负债表"合同资产"项目列示的是（）', opts: ['A.已完工未结算的工程款', 'B.已结算未完工的工程款',
+                            'C.已收到的工程预收款', 'D.已到期的质保金'
+                        ], ans: 'A' },
+                    { q: '银行自动划扣管理费，通过什么单据进行报账（）', opts: ['A.付款单', 'B.报销单', 'C.划扣单', 'D.调拨单'], ans: 'C' },
+                    { q: '建筑企业下列税费中，应通过"税金及附加"科目核算的是（）', opts: ['A.增值税', 'B.企业所得税', 'C.城市维护建设税',
+                            'D.个人所得税（代扣）'
+                        ], ans: 'C' },
+                    { q: '项目部代付农民工工资时，以下哪种付款顺序是正确的（）', opts: ['A.项目部先自行到银行支付，后报账',
+                            'B.项目部先报账，待单据完成后进行线下支付', 'C.项目部直接提取备用金现金发放，事后补单',
+                            'D.项目部口头请示领导同意后即可支付，无需书面单据'
+                        ], ans: 'B' },
+                    { q: '建筑企业的"专项储备"科目，主要用于核算（）', opts: ['A.安全生产费用', 'B.职工教育经费', 'C.工会经费', 'D.研发费用'],
+                        ans: 'A' },
+                    { q: '利润表中，"营业收入"减去"营业成本"等于（）', opts: ['A.利润总额', 'B.净利润', 'C.息税前利润', 'D.毛利'], ans: 'D' },
+                    { q: '下列各项中，属于建筑企业"营业外支出"的是（）', opts: ['A.工程索赔支出', 'B.坏账损失', 'C.公益性捐赠支出', 'D.水电费'],
+                        ans: 'C' },
+                    { q: '建筑企业"合同结算"科目期末贷方余额，在资产负债表中应列报为（）', opts: ['A.合同资产', 'B.应收账款', 'C.合同负债', 'D.预收账款'],
+                        ans: 'C' },
+                    { q: '建筑企业下列项目中，属于经营活动现金流量的是（）', opts: ['A.收到的工程款', 'B.收到的投资款', 'C.取得借款收到的现金',
+                            'D.吸收投资收到的现金'
+                        ], ans: 'A' },
+                    { q: '下列哪项属于资产负债表中的"流动资产"？（）', opts: ['A.固定资产', 'B.无形资产', 'C.应收账款', 'D.长期股权投资'],
+                    ans: 'C' },
+                    { q: '建筑企业下列资产中，不需要计提折旧的是（）', opts: ['A.施工电梯', 'B.塔式起重机', 'C.单独计价入账的土地', 'D.运输车辆'],
+                        ans: 'C' },
+                    { q: '根据公司《关于开展备用金专项治理工作的通知》的规定，所有备用金性质的借款必须通过（）科目核算。', opts: ['A.其他应收款-备用金',
+                            'B.其他应收款-往来款项', 'C.其他应收款-暂付款项', 'D.其他应收款-其他'
+                        ], ans: 'A' },
+                    { q: '建筑企业下列情形中，可以选择简易计税方法的是（）', opts: ['A.新开工的大型商业综合体', 'B.为甲供工程提供的建筑服务',
+                            'C.为政府机关提供的装修服务', 'D.为房地产开发企业提供的总包服务'
+                        ], ans: 'B' },
+                    { q: '建筑企业"合同履约成本"科目属于（）', opts: ['A.资产类科目', 'B.负债类科目', 'C.损益类科目', 'D.所有者权益类科目'],
+                        ans: 'A' }
+                ],
+                multi: [
+                    { q: '下列各项中，属于建筑企业"合同履约成本"核算内容的有（）', opts: ['A.直接材料（钢筋、水泥）', 'B.直接人工（施工人员工资）',
+                            'C.项目管理人员工资', 'D.企业总部管理人员工资'
+                        ], ans: 'ABC' },
+                    { q: '建筑企业可以选择简易计税方法的情形有（）', opts: ['A.以清包工方式提供的建筑服务', 'B.为甲供工程提供的建筑服务',
+                            'C.为建筑工程老项目提供的建筑服务', 'D.为新建住宅楼提供的总包服务'
+                        ], ans: 'ABC' },
+                    { q: '公司财务系统2026年的主要工作有（）', opts: ['A.优化财务管理体系', 'B.深化财务信息系统建设', 'C.细化项目独立核算',
+                            'D.强化公司资金管理'
+                        ], ans: 'ABCD' },
+                    { q: '建筑企业下列项目中，应通过"其他应收款"科目核算的有（）', opts: ['A.投标保证金', 'B.履约保证金（支付时）', 'C.职工备用金',
+                            'D.预付材料款'
+                        ], ans: 'ABC' },
+                    { q: '以下哪些资料在付农民工工资时需上传到影像附件（）', opts: ['A.付款审批单', 'B.农民工工资确认表（签字盖手印版）',
+                            'C.代付农民工工资委托书', 'D.收据'
+                        ], ans: 'ABCD' },
+                    { q: '根据《会计档案管理办法》，企业原始凭证的最低保管期限是（）', opts: ['A.10年', 'B.15年', 'C.30年', 'D.永久'], ans: 'C' },
+                    { q: '现金流量表将现金流量分为三类，包括以下哪项活动？（）', opts: ['A.经营活动', 'B.投资活动', 'C.筹资活动', 'D.分配活动'],
+                        ans: 'ABC' },
+                    { q: '建筑企业下列税费中，通过"税金及附加"科目核算的有（）', opts: ['A.城市维护建设税', 'B.教育费附加', 'C.印花税', 'D.增值税'],
+                        ans: 'ABC' },
+                    { q: '建筑企业下列行为中，需要预缴增值税的有（）', opts: ['A.跨地级市提供建筑服务', 'B.收到工程预收款', 'C.转让异地不动产',
+                            'D.在同一城市内提供建筑服务'
+                        ], ans: 'ABC' },
+                    { q: '建筑企业下列项目中，属于存货的有（）', opts: ['A.库存钢材', 'B.未完施工工程', 'C.周转材料', 'D.临时设施'], ans: 'ABC' },
+                    { q: '关于"合同结算"科目，下列说法正确的有（）', opts: ['A.借方登记已完工未结算的价款', 'B.贷方登记已结算的合同价款',
+                            'C.期末借方余额列报为合同资产', 'D.期末贷方余额列报为合同负债'
+                        ], ans: 'ABCD' },
+                    { q: '建筑企业下列项目中，属于所有者权益的有（）', opts: ['A.实收资本', 'B.资本公积', 'C.专项储备', 'D.合同负债'],
+                    ans: 'ABC' },
+                    { q: '"两金压降"的两金指什么？（）', opts: ['A.存货', 'B.银行存款', 'C.应收账款', 'D.应付账款'], ans: 'AC' },
+                    { q: '建筑企业下列支出中，可以在企业所得税前扣除的有（）', opts: ['A.合理的工资薪金', 'B.职工福利费（不超过工资总额14%）',
+                            'C.公益性捐赠（不超过利润总额12%）', 'D.税收滞纳金'
+                        ], ans: 'ABC' },
+                    { q: '建筑企业下列各项中，应通过"其他应付款"科目核算的有（）', opts: ['A.收到的履约保证金', 'B.收到的投标保证金（应退还）',
+                            'C.应付的职工工资', 'D.应付的分包工程款'
+                        ], ans: 'AB' },
+                    { q: '关于建筑企业安全生产费用，下列说法正确的有（）', opts: ['A.属于专项储备', 'B.在所有者权益中列示', 'C.可以用于安全设备购置',
+                            'D.可以用于安全培训'
+                        ], ans: 'ABCD' },
+                    { q: '哪些付款情况下GSC系统报账结算方式可以选网银转账（）', opts: ['A.财司付批量', 'B.用财司账户单笔付款', 'C.付现金',
+                            'D.建行付批量'
+                        ], ans: 'ACD' },
+                    { q: '建筑企业下列各项中，属于"财务费用"的有（）', opts: ['A.短期借款利息', 'B.银行手续费', 'C.汇兑损失', 'D.长期借款利息'],
+                        ans: 'ABCD' },
+                    { q: '关于建筑企业"履约进度"的确定，下列说法正确的有（）', opts: ['A.可以采用投入法', 'B.可以采用产出法',
+                            'C.企业可以根据实际情况变更方法', 'D.一经确定不得变更'
+                        ], ans: 'ABC' },
+                    { q: '固定资产折旧方法有（）', opts: ['A.年限平均法', 'B.工作量法', 'C.年数总和法', 'D.生产数量法'], ans: 'ABC' },
+                    { q: '建筑企业下列情形中，不得开具增值税专用发票的有（）', opts: ['A.向小规模纳税人销售材料', 'B.提供免征增值税的建筑服务',
+                            'C.向个人销售砂石', 'D.向一般纳税人出租设备'
+                        ], ans: 'BC' },
+                    { q: '建筑企业下列各项中，属于"管理费用"的有（）', opts: ['A.企业总部管理人员工资', 'B.董事会经费', 'C.诉讼费',
+                            'D.施工现场水电费'
+                        ], ans: 'ABC' },
+                    { q: '公司三项费用指什么（）', opts: ['A.办公费', 'B.差旅费', 'C.业务招待费', 'D.财务费用'], ans: 'ABC' },
+                    { q: '建筑企业收到工程预收款时的正确处理有（）', opts: ['A.借记"银行存款"', 'B.贷记"合同负债"', 'C.需要预缴增值税',
+                            'D.确认主营业务收入'
+                        ], ans: 'ABC' },
+                    { q: '建筑企业下列项目中，属于"应付职工薪酬"核算范围的有（）', opts: ['A.施工人员工资', 'B.项目管理人员工资', 'C.总部管理人员工资',
+                            'D.支付给分包方的工程款'
+                        ], ans: 'ABC' },
+                    { q: '建筑企业下列资产中，属于"金融资产"的有（）', opts: ['A.应收账款', 'B.应收票据', 'C.合同资产', 'D.预付账款'], ans: 'AB' },
+                    { q: '建筑企业衡量短期偿债能力最常用的财务指标是（）', opts: ['A.资产负债率', 'B.流动比率', 'C.净资产收益率', 'D.应收账款周转率'],
+                        ans: 'B' },
+                    { q: '建筑企业下列项目中，属于"营业外收入"的有（）', opts: ['A.处置固定资产利得', 'B.确实无法支付的应付款项',
+                            'C.与日常活动无关的政府补助', 'D.接受捐赠'
+                        ], ans: 'ABCD' },
+                    { q: '建筑企业采用一般计税方法时，增值税进项税额可以抵扣的情形有（）', opts: ['A.购买钢筋取得专用发票', 'B.支付分包款取得专用发票',
+                            'C.购买用于集体福利的物资', 'D.购买施工设备取得专用发票'
+                        ], ans: 'ABD' },
+                    { q: '以下哪类单据在GSC系统中不经过结算环节（）', opts: ['A.收款单', 'B.扣款单', 'C.差旅报销单', 'D.通用报销单'], ans: 'AB' }
+                ],
+                fill: [
+                    { q: '我公司员工去工作常驻地外的城市出差（武汉黄石间除外），市内交通费按每人每天（）元包干报销。', ans: '80' },
+                    { q: '建筑企业购买水泥，购入时先计入"（）"科目，领用时转入"合同履约成本"。', ans: '原材料' },
+                    { q: '已婚职工探望父母的国内往返路费，在本人月基本工资（）以外的部分，由所在单位负担。', ans: '30%' },
+                    { q: '根据《关于中国十五冶职工有关福利政策及工会活动的规定》会员生病住院时，其所在单位工会给予（）元慰问金。', ans: '800' },
+                    { q: '我公司员工外出参加会议或学习的，从第16天起，每人每天发放（）元伙食补助。', ans: '30' },
+                    { q: '增值税一般纳税人提供建筑服务，一般计税方法的税率为（）%。', ans: '9' },
+                    { q: '根据《会计档案管理办法》，年度财务会计报告应当（）保管（10年/30年/永久）。', ans: '永久' },
+                    { q: '脚手架、模板等可多次使用的材料，属于"（）"。', ans: '周转材料' },
+                    { q: '应收账款周转率的公式是（）。', ans: '营业收入 ÷ 应收账款平均余额' },
+                    { q: '关于中国十五冶内部接待收费标准的规定，出差人员在国内单位内部食堂用餐的，须向接待单位交纳伙食费，其中早餐标准为（）元一餐。', ans: '5' },
+                    { q: '建筑企业向业主提交的履约保函，属于或有事项，一般不在表内确认，而应在（）中披露。', ans: '财务报表附注' },
+                    { q: '建筑服务简易计税方法适用的征收率为（）%。', ans: '3' },
+                    { q: '建筑企业采用一般计税方法，跨地级市提供建筑服务，在服务发生地预缴增值税的预征率为（）%。', ans: '2' },
+                    { q: '杜邦分析体系的起点是（）。', ans: '净资产收益率' },
+                    { q: '利润表主要反映企业某一会计期间的（）。', ans: '经营成果' },
+                    { q: '建筑企业的"专项储备"科目主要用于核算（）费用。', ans: '安全生产' },
+                    { q: '"合同结算"科目期末贷方余额在资产负债表中列报为"（）"。', ans: '合同负债' },
+                    { q: '建筑企业为建造固定资产借入的专项借款，在资产达到预定可使用状态前发生的利息，应当（）化，计入资产成本。', ans: '资本' },
+                    { q: '物资采购单笔金额在五万元以上的，除以结算单、验收单、发票为附件外，还应上传"（）"作为附件资料。', ans: '合同' },
+                    { q: '现行准则下，施工企业确认收入常用的履约进度方法叫（）。', ans: '完工百分比法' },
+                    { q: '项目部付款超（）万时，影像需附三重一大会议纪要。', ans: '200' },
+                    { q: '城市维护建设税应通过"（）"科目核算。', ans: '税金及附加' },
+                    { q: '建筑企业收到的工程款，在现金流量表中应列示为（）活动现金流入。', ans: '经营' },
+                    { q: '现代沃尔评分法认为企业财务评价的内容首先是盈利能力、其次是"（）"、再次是成长能力。', ans: '偿债能力' },
+                    { q: '长期股权投资的后续计量方法包括成本法和（）。', ans: '权益法' },
+                    { q: '"合同资产"科目期末借方余额在资产负债表中列报为"（）"。', ans: '合同资产' },
+                    { q: '企业合并中形成的商誉，无论是否存在减值迹象，都应当至少在每年（）进行减值测试。', ans: '年度终了' },
+                    { q: '现金流量分析指标有（）、（）、（）。', ans: '营业现金比率、每股营业现金净流量、全部资产现金回收率' },
+                    { q: '会计基本恒等式：资产 = 负债 + （）。', ans: '所有者权益' },
+                    { q: '预算是一个有机联系的整体，一般将由（）、（）、（）组成的预算体系，称为全面预算体系。', ans: '经营预算、专门决策预算、财务预算' }
+                ]
+            },
+            business: {
+                name: '经营管理',
+                icon: '📊',
+                color: '#92400e',
+                single: [
+                    { q: '公司商务管理核心原则是（）', opts: ['A.项目经理负责制', 'B.法人管项目', 'C.分包自主管理', 'D.成本包干制'], ans: 'B' },
+                    { q: '标价分离中"标"指（）', opts: ['A.责任成本', 'B.中标价（合同价）', 'C.计划成本', 'D.实际成本'], ans: 'B' },
+                    { q: '施工图预算应在图纸到位后（）日内完成编制', opts: ['A.15', 'B.30', 'C.45', 'D.60'], ans: 'A' },
+                    { q: '口头通知中标后（）日内须完成项目策划大纲编审', opts: ['A.15', 'B.7', 'C.45', 'D.10'], ans: 'B' },
+                    { q: '竣工结算策划应在项目完工前（）个月开展', opts: ['A.1-2', 'B.3-4', 'C.4-5', 'D.5-6'], ans: 'B' },
+                    { q: '承包合同二级交底应在项目开工（）天内完成', opts: ['A.3', 'B.5', 'C.7', 'D.10'], ans: 'C' },
+                    { q: '分包合同签订应在定标后（）天内完成', opts: ['A.5', 'B.10', 'C.15', 'D.20'], ans: 'B' },
+                    { q: '分包工程履约保证金缴纳比例原则上不低于（）', opts: ['A.1%', 'B.3%', 'C.5%', 'D.10%'], ans: 'C' },
+                    { q: '成本控制中钢筋节约率目标不低于（）', opts: ['A.1%', 'B.2%', 'C.3%', 'D.4%'], ans: 'D' },
+                    { q: '经济活动分析准备会在每月（）日召开', opts: ['A.20', 'B.24', 'C.25', 'D.30'], ans: 'B' },
+                    { q: '分包签证总金额不得超过分包合同结算金额的（）', opts: ['A.1%', 'B.1.5%', 'C.2%', 'D.3%'], ans: 'B' },
+                    { q: '对发包人索赔时，直管项目单项索赔金额≥（）万元需公司分管领导审批', opts: ['A.30', 'B.50', 'C.80', 'D.100'], ans: 'B' },
+                    { q: '对发包人签证应在事件发生（）天内申报', opts: ['A.7', 'B.14', 'C.21', 'D.28'], ans: 'B' },
+                    { q: '对发包人索赔时，索赔意向书应在事项发生（）天内递交', opts: ['A.7', 'B.14', 'C.21', 'D.28'], ans: 'D' },
+                    { q: '分包完工结算应在分包工程完工（）天内报送资料', opts: ['A.15', 'B.30', 'C.45', 'D.60'], ans: 'B' },
+                    { q: '分包结算审核审计程序原则上在（）天内完成', opts: ['A.60', 'B.90', 'C.120', 'D.150'], ans: 'C' },
+                    { q: '竣工结算应在竣工验收后（）个月内完成', opts: ['A.3', 'B.6', 'C.9', 'D.12'], ans: 'B' },
+                    { q: '商务总结应在结算定案后（）天内完成', opts: ['A.15', 'B.30', 'C.45', 'D.60'], ans: 'B' },
+                    { q: '经营管理三级机构不包括（）', opts: ['A.公司', 'B.二级单位', 'C.分包单位', 'D.项目部'], ans: 'C' },
+                    { q: '公司经营管理主管部门是（）', opts: ['A.工程部', 'B.商务合约部', 'C.财务部', 'D.市场部'], ans: 'B' },
+                    { q: '项目部是合同（）主体', opts: ['A.管理', 'B.监督', 'C.履约', 'D.审批'], ans: 'C' },
+                    { q: '承包合同签订后由（）组织交底', opts: ['A.市场开发部', 'B.商务部', 'C.项目部', 'D.法务部'], ans: 'A' },
+                    { q: '合同交底应采用（）形式', opts: ['A.书面通知', 'B.会议', 'C.口头传达', 'D.文件传阅'], ans: 'B' },
+                    { q: '禁止将工程（）转给其他单位施工', opts: ['A.专业分包', 'B.劳务分包', 'C.全部', 'D.部分'], ans: 'C' },
+                    { q: '主体结构施工（）分包（钢结构除外）', opts: ['A.可以', 'B.禁止', 'C.经批准可以', 'D.业主同意可以'], ans: 'B' },
+                    { q: '分包合同编号规则中"FB"代表（）', opts: ['A.服务', 'B.分包', 'C.承包', 'D.法人'], ans: 'B' },
+                    { q: '分包商分级分类管理中不包括（）', opts: ['A.合格', 'B.战略', 'C.试用', 'D.黑名单'], ans: 'C' },
+                    { q: '已完未结工程确认遵循（）原则', opts: ['A.谨慎性', 'B.配比性', 'C.合同主线', 'D.以上都是'], ans: 'D' },
+                    { q: '经济活动分析由（）牵头负责', opts: ['A.商务经理', 'B.项目经理', 'C.生产经理', 'D.总工程师'], ans: 'B' },
+                    { q: '计划成本应在目标责任书签订后（）天内编制完成', opts: ['A.5', 'B.10', 'C.15', 'D.20'], ans: 'B' },
+                    { q: '项目管控模式不包括（）', opts: ['A.直管', 'B.重点', 'C.常规', 'D.联营'], ans: 'D' },
+                    { q: '商务风险监控实行（）级管控', opts: ['A.一', 'B.二', 'C.三', 'D.四'], ans: 'C' },
+                    { q: '对所属单位商务检查周期为（）', opts: ['A.月', 'B.季', 'C.半年', 'D.年'], ans: 'B' },
+                    { q: '合同产值转化率连续3个月＜（）为红色风险', opts: ['A.90%', 'B.80%', 'C.75%', 'D.70%'], ans: 'C' },
+                    { q: '分包签证遵循（）原则', opts: ['A.先施工后审批', 'B.先审批后实施', 'C.边施工边审批', 'D.事后补签'], ans: 'B' },
+                    { q: '单项分包签证3万元以下由（）审批', opts: ['A.公司商务部', 'B.二级单位', 'C.项目经理', 'D.生产经理'], ans: 'C' },
+                    { q: '分包合同交底应在接收合同后（）天内完成', opts: ['A.3', 'B.5', 'C.7', 'D.10'], ans: 'D' },
+                    { q: '承包合同计量形象确认应在每月（）日前完成', opts: ['A.20', 'B.25', 'C.30', 'D.次月5日'], ans: 'B' },
+                    { q: '分包计量任务单应在每月（）日前签发', opts: ['A.20', 'B.25', 'C.30', 'D.次月5日'], ans: 'B' },
+                    { q: '停缓建结算应在停工退场（）个月内报送', opts: ['A.1', 'B.2', 'C.3', 'D.6'], ans: 'A' },
+                    { q: '分包商进场通知应提前（）天发出', opts: ['A.7', 'B.10', 'C.15', 'D.20'], ans: 'C' },
+                    { q: '分包商退场申请应提前（）天报送', opts: ['A.15', 'B.30', 'C.45', 'D.60'], ans: 'B' },
+                    { q: '商务资料应在撤离前（）天内移交', opts: ['A.7', 'B.10', 'C.15', 'D.30'], ans: 'C' },
+                    { q: '指标价格管控数据每（）更新发布一次', opts: ['A.月', 'B.季', 'C.半年', 'D.年'], ans: 'C' },
+                    { q: '项目预计总收入与总成本在（）后3天内编制', opts: ['A.中标', 'B.签合同', 'C.标价分离', 'D.开工'], ans: 'C' },
+                    { q: '已完未结工程明细表每月（）日前上报', opts: ['A.20', 'B.25', 'C.30', 'D.次月5日'], ans: 'C' },
+                    { q: '承包合同计量台账每月（）日前上报', opts: ['A.20', 'B.25', 'C.30', 'D.次月5日'], ans: 'C' },
+                    { q: '反索赔台账每月（）日前上报', opts: ['A.20', 'B.25', 'C.30', 'D.次月5日'], ans: 'C' },
+                    { q: '竣工结算结清单应在完成后（）天内报送', opts: ['A.3', 'B.5', 'C.7', 'D.10'], ans: 'C' },
+                    { q: '商务管理手册由公司（）负责解释', opts: ['A.工程部', 'B.商务部门', 'C.财务部', 'D.人力部'], ans: 'B' },
+                    { q: '经营管理办法覆盖（）后全部经营业务', opts: ['A.投标', 'B.合同签订', 'C.开工', 'D.竣工'], ans: 'B' },
+                    { q: '二级单位应制定实施细则报公司（）', opts: ['A.审批', 'B.备案', 'C.审核', 'D.批复'], ans: 'B' },
+                    { q: '特大型项目合同履行由（）监督管理', opts: ['A.二级单位', 'B.公司', 'C.项目部', 'D.业主'], ans: 'B' },
+                    { q: '分包商资源库由（）负责管理', opts: ['A.二级单位', 'B.项目部', 'C.公司商务合约部', 'D.采购中心'], ans: 'C' },
+                    { q: '竣工结算奖励执行公司（）办法', opts: ['A.薪酬', 'B.考核', 'C.专项奖励', 'D.绩效'], ans: 'C' },
+                    { q: '境外项目属地化采购实行（）原则', opts: ['A.集中采购', 'B.一事一议', 'C.自主采购', 'D.业主指定'], ans: 'B' },
+                    { q: '班组计件单价由（）批准', opts: ['A.项目经理', 'B.二级单位商务部', 'C.公司商务部', 'D.生产经理'], ans: 'B' },
+                    { q: '统计资料上报应遵循（）原则', opts: ['A.及时准确', 'B.真实全面', 'C.规范完整', 'D.以上都是'], ans: 'D' },
+                    { q: '产值上报不得（）业主审批值', opts: ['A.小于', 'B.等于', 'C.大于', 'D.低于'], ans: 'C' },
+                    { q: '检查考核分为经常性检查和（）检查', opts: ['A.日常', 'B.月度', 'C.专项', 'D.年度'], ans: 'C' }
+                ],
+                multi: [
+                    { q: '商务管理核心原则包括（）', opts: ['A.法人管项目', 'B.项目独立核算', 'C.专业团队系统化管理', 'D.标准化管理', 'E.粗放管理'],
+                        ans: 'ABCD' },
+                    { q: '标价分离区分内容包括（）', opts: ['A.责任成本', 'B.投融资效益', 'C.资金效益', 'D.管理成本', 'E.管理效益'],
+                        ans: 'ABCDE' },
+                    { q: '项目管控模式分为（）', opts: ['A.直管项目', 'B.重点项目', 'C.常规项目', 'D.联营项目', 'E.分包项目'], ans: 'ABC' },
+                    { q: '承包合同交底内容包括（）', opts: ['A.项目背景', 'B.合同主要条款', 'C.投标策略', 'D.风险分析', 'E.利润点与亏损点'],
+                        ans: 'ABCDE' },
+                    { q: '工程分包禁止行为包括（）', opts: ['A.转包', 'B.挂靠', 'C.违法分包', 'D.肢解分包', 'E.劳务分包'], ans: 'ABCD' },
+                    { q: '分包履约担保形式包括（）', opts: ['A.现金', 'B.银行保函', 'C.担保公司担保', 'D.支票', 'E.汇票'], ans: 'ABC' },
+                    { q: '分包合同审批资料包括（）', opts: ['A.评审表', 'B.资质文件', 'C.履约保证金凭证', 'D.定标记录', 'E.分包策划'],
+                        ans: 'ABCDE' },
+                    { q: '成本控制"量价分离"包括（）', opts: ['A.消耗量控制', 'B.采购价控制', 'C.工期控制', 'D.质量控制', 'E.安全控制'],
+                    ans: 'AB' },
+                    { q: '经济活动分析"四算"包括（）', opts: ['A.投标成本', 'B.责任成本', 'C.计划成本', 'D.实际成本', 'E.结算成本'],
+                    ans: 'ABCD' },
+                    { q: '已完未结工程确认原则（）', opts: ['A.合同主线', 'B.谨慎性', 'C.收入成本配比', 'D.及时性', 'E.客观性'], ans: 'ABC' },
+                    { q: '预结算管理包括（）', opts: ['A.施工图预算', 'B.承包计量', 'C.竣工结算', 'D.分包计量', 'E.分包结算'], ans: 'ABCDE' },
+                    { q: '对发包人签证资料包括（）', opts: ['A.指令单', 'B.影像资料', 'C.图纸', 'D.方案', 'E.确认单'], ans: 'ABCDE' },
+                    { q: '索赔可补偿内容包括（）', opts: ['A.工期', 'B.费用', 'C.利润', 'D.奖励', 'E.补贴'], ans: 'ABC' },
+                    { q: '无效分包签证包括（）', opts: ['A.不按规定表单', 'B.超审批权限', 'C.内容不实', 'D.自定价格', 'E.超时效'], ans: 'ABCDE' },
+                    { q: '分包商进退场管理包括（）', opts: ['A.进场验证', 'B.退场申请', 'C.资料交接', 'D.考核评价', 'E.选用审批'], ans: 'ABC' },
+                    { q: '商务风险类型包括（）', opts: ['A.行业风险', 'B.营销风险', 'C.市场风险', 'D.管理风险', 'E.境外风险'], ans: 'ABCDE' },
+                    { q: '经营管理三级机构（）', opts: ['A.公司', 'B.二级单位', 'C.项目部', 'D.分包商', 'E.供应商'], ans: 'ABC' },
+                    { q: '公司经营管理职责（）', opts: ['A.制定制度', 'B.监督直管项目', 'C.分包商库管理', 'D.统计管理', 'E.结算监控'],
+                        ans: 'ABCDE' },
+                    { q: '二级单位经营职责（）', opts: ['A.履行合同', 'B.指导项目策划', 'C.分包管理', 'D.经济活动分析', 'E.上报信息'],
+                        ans: 'ABCDE' },
+                    { q: '项目部经营职责（）', opts: ['A.编制预算', 'B.过程计量', 'C.签证索赔', 'D.分包结算', 'E.资料归档'], ans: 'ABCDE' },
+                    { q: '合同变更原因包括（）', opts: ['A.法律法规变化', 'B.工程变更', 'C.物价变化', 'D.不可抗力', 'E.合同外工作'],
+                        ans: 'ABCDE' },
+                    { q: '设计优化价值包括（）', opts: ['A.降低成本', 'B.方便施工', 'C.提高效益', 'D.缩短工期', 'E.提升质量'], ans: 'ABC' },
+                    { q: '分包结算流程（）', opts: ['A.分包申请', 'B.项目部初审', 'C.二级单位复审', 'D.公司终审', 'E.财务支付'], ans: 'ABCDE' },
+                    { q: '分包商管理原则（）', opts: ['A.严格准入', 'B.分类分级', 'C.动态考核', 'D.优胜劣汰', 'E.长期合作'], ans: 'ABCD' },
+                    { q: '境外项目经营重点（）', opts: ['A.属地化采购', 'B.班组核算', 'C.资料归档', 'D.价格信息', 'E.税务风险'],
+                        ans: 'ABCDE' },
+                    { q: '计划统计要求（）', opts: ['A.准确', 'B.及时', 'C.全面', 'D.规范', 'E.随意'], ans: 'ABCD' },
+                    { q: '报表系统包括（）', opts: ['A.建筑业报表', 'B.矿山报表', 'C.国外工程报表', 'D.经营月报', 'E.贸易报表'], ans: 'ABCDE' },
+                    { q: '检查考核内容（）', opts: ['A.合同交底', 'B.预算编制', 'C.经济分析', 'D.签证索赔', 'E.结算进展'], ans: 'ABCDE' },
+                    { q: '商务策划内容包括（）', opts: ['A.资源策划', 'B.风险防范', 'C.二次经营', 'D.标价分离', 'E.进度计划'], ans: 'ABCD' },
+                    { q: '竣工结算策划内容（）', opts: ['A.完工成本预测', 'B.结算初稿', 'C.时间计划', 'D.责任人', 'E.争议处理'],
+                        ans: 'ABCDE' },
+                    { q: '成本控制目标包括（）', opts: ['A.钢筋节约≥4%', 'B.优化设计≥1%', 'C.签证≥1%', 'D.计量确认率100%', 'E.工期最短'],
+                        ans: 'ABCD' },
+                    { q: '指标价格管控作用（）', opts: ['A.投标报价', 'B.集中采购', 'C.标价分离', 'D.成本控制', 'E.绩效考核'], ans: 'ABCD' },
+                    { q: '内部协同管理包括（）', opts: ['A.工程计量', 'B.竣工结算', 'C.费用确认', 'D.分包管理', 'E.物资采购'], ans: 'ABC' },
+                    { q: '签证证据要求（）', opts: ['A.真实', 'B.全面', 'C.关联', 'D.及时', 'E.法律效力'], ans: 'ABCDE' },
+                    { q: '反索赔管理包括（）', opts: ['A.识别预警', 'B.编制答复', 'C.跟踪办理', 'D.资料保管', 'E.主动索赔'], ans: 'ABCD' },
+                    { q: '分包合同主要条款（）', opts: ['A.工程范围', 'B.工期质量', 'C.价款支付', 'D.履约担保', 'E.违约责任'], ans: 'ABCDE' },
+                    { q: '分包计量资料包括（）', opts: ['A.任务单', 'B.盘点表', 'C.材料领用表', 'D.签证单', 'E.预算书'], ans: 'ABCDE' },
+                    { q: '商务资料分类（）', opts: ['A.发包类', 'B.分包类', 'C.内部管理类', 'D.外部资料', 'E.临时资料'], ans: 'ABC' },
+                    { q: '绩效评价指标（）', opts: ['A.合同交底率', 'B.预算编制率', 'C.产值转化率', 'D.结算率', 'E.利润率'], ans: 'ABCD' },
+                    { q: '合规性评价包括（）', opts: ['A.制度执行', 'B.合同合规', 'C.分包合规', 'D.结算合规', 'E.财务合规'], ans: 'ABCD' },
+                    { q: '项目目标管理包括（）', opts: ['A.投标测算', 'B.标价分离', 'C.责任书签订', 'D.计划成本', 'E.考核奖励'],
+                        ans: 'ABCDE' },
+                    { q: '服务合同管理包括（）', opts: ['A.评审', 'B.用印', 'C.编号', 'D.备案', 'E.交底'], ans: 'ABCDE' },
+                    { q: '停缓建结算重点（）', opts: ['A.已完工程量', 'B.人员遣散', 'C.材料处置', 'D.现场维护', 'E.索赔费用'], ans: 'ABCDE' },
+                    { q: '结算结清管理包括（）', opts: ['A.竣工结算', 'B.分包结算', 'C.结清单', 'D.台账', 'E.报送备案'], ans: 'ABCDE' },
+                    { q: '经营风险防控包括（）', opts: ['A.投标风险', 'B.合同风险', 'C.成本风险', 'D.结算风险', 'E.分包风险'], ans: 'ABCDE' }
+                ],
+                fill: [
+                    { q: '商务管理核心原则：__________、项目独立核算。', ans: '法人管项目' },
+                    { q: '标价分离是中标价与__________分离。', ans: '责任成本' },
+                    { q: '施工图预算应在图纸到位后__________日内完成。', ans: '30' },
+                    { q: '项目商务策划中标后__________天内完成审批备案。', ans: '30' },
+                    { q: '承包合同二级交底开工__________天内完成。', ans: '7' },
+                    { q: '分包合同定标后__________天内签订。', ans: '10' },
+                    { q: '分包履约保证金比例不低于__________。', ans: '5%' },
+                    { q: '钢筋节约率目标不低于__________。', ans: '4%' },
+                    { q: '分包签证总额不超结算额__________。', ans: '1.5%' },
+                    { q: '单项索赔≥__________万元需公司分管领导审批。', ans: '50' },
+                    { q: '发包人签证事件发生__________天内申报。', ans: '14' },
+                    { q: '索赔意向书__________天内递交。', ans: '28' },
+                    { q: '分包完工结算完工__________天内报送。', ans: '30' },
+                    { q: '分包结算审核__________天内完成。', ans: '120' },
+                    { q: '竣工结算验收后__________个月内完成。', ans: '6' },
+                    { q: '经营管理实行__________三级管理。', ans: '公司、二级单位、项目部' },
+                    { q: '公司主管部门是__________。', ans: '商务合约部' },
+                    { q: '项目部是合同__________主体。', ans: '履约' },
+                    { q: '禁止工程__________。', ans: '转包、挂靠、违法分包' },
+                    { q: '分包合同实行__________管理。', ans: '统一编号' },
+                    { q: '经济活动分析由__________牵头。', ans: '项目经理' },
+                    { q: '已完未结工程遵循__________原则。', ans: '谨慎性、配比性、合同主线' },
+                    { q: '分包签证遵循__________原则。', ans: '先审批、后实施' },
+                    { q: '商务风险实行__________管控。', ans: '三级' },
+                    { q: '商务检查周期为__________。', ans: '季' },
+                    { q: '境外采购实行__________。', ans: '一事一议' },
+                    { q: '统计上报遵循__________原则。', ans: '准确、及时、全面、规范' },
+                    { q: '产值上报不__________业主审批值。', ans: '大于' },
+                    { q: '商务总结结算定案后__________天内完成。', ans: '30' },
+                    { q: '商务手册由公司__________解释。', ans: '商务部门' }
+                ]
+            },
+            safety: {
+                name: '安全管理',
+                icon: '⛑️',
+                color: '#991b1b',
+                single: [
+                    { q: '我国安全生产工作的方针是（）', opts: ['A.安全第一、预防为主、综合治理', 'B.安全第一、预防为主、以人为本',
+                            'C.预防为主、防治结合、综合治理', 'D.以人为本、安全优先、依法治理'
+                        ], ans: 'A' },
+                    { q: '《中华人民共和国环境保护法》规定，保护环境是国家的（）', opts: ['A.基本国策', 'B.重要政策', 'C.发展战略', 'D.核心任务'],
+                        ans: 'A' },
+                    { q: '从业人员发现直接危及人身安全的紧急情况时，有权（）', opts: ['A.停止作业', 'B.继续作业', 'C.等待指令', 'D.擅自撤离'],
+                        ans: 'A' },
+                    { q: '下列不属于危险废物的是（）', opts: ['A.废机油', 'B.废电池', 'C.生活垃圾', 'D.废油漆桶'], ans: 'C' },
+                    { q: '安全生产许可证的有效期为（）年', opts: ['A.2', 'B.3', 'C.4', 'D.5'], ans: 'B' },
+                    { q: '工业废水排放必须达到（）标准才能排放', opts: ['A.企业内部', 'B.行业排放', 'C.国家或地方', 'D.区域自行制定'],
+                    ans: 'C' },
+                    { q: '灭火器灭火时，喷射的最佳位置是火焰的（）', opts: ['A.上部', 'B.中部', 'C.根部', 'D.任意位置'], ans: 'C' },
+                    { q: '《中华人民共和国安全生产法》规定，生产经营单位应当对从业人员进行安全生产（）', opts: ['A.教育和培训', 'B.技能考核',
+                            'C.体能测试', 'D.安全体检'
+                        ], ans: 'A' },
+                    { q: '噪声污染的防治关键是控制噪声的（）', opts: ['A.传播途径', 'B.声源', 'C.接收者', 'D.环境'], ans: 'B' },
+                    { q: '从业人员在作业过程中，应当严格落实（），遵守本单位的安全生产规章制度和操作规程', opts: ['A.岗位安全责任', 'B.企业主体责任',
+                            'C.监管责任', 'D.领导责任'
+                        ], ans: 'A' },
+                    { q: '下列属于大气污染物的是（）', opts: ['A.氮气', 'B.氧气', 'C.二氧化硫', 'D.氢气'], ans: 'C' },
+                    { q: '生产经营单位发生生产安全事故后，事故现场有关人员应当立即报告（）', opts: ['A.本单位负责人', 'B.当地政府', 'C.应急管理部门',
+                            'D.环保部门'
+                        ], ans: 'A' },
+                    { q: '危险化学品储存场所应设置明显的（）', opts: ['A.宣传标语', 'B.安全警示标志', 'C.产品说明', 'D.操作流程'], ans: 'B' },
+                    { q: '环境保护坚持保护优先、预防为主、综合治理、（）、损害担责的原则', opts: ['A.政府主导', 'B.企业负责', 'C.公众参与',
+                            'D.部门监管'
+                        ], ans: 'C' },
+                    { q: '安全带的正确使用方法是（）', opts: ['A.低挂高用', 'B.高挂低用', 'C.水平悬挂', 'D.随意悬挂'], ans: 'B' },
+                    { q: '一般工业固体废弃物可以（）', opts: ['A.随意丢弃', 'B.分类存放、综合利用', 'C.混入危险废物', 'D.直接填埋'], ans: 'B' },
+                    { q: '生产经营单位的（）对本单位的安全生产工作全面负责', opts: ['A.主要负责人', 'B.安全管理人员', 'C.部门主管', 'D.从业人员'],
+                        ans: 'A' },
+                    { q: '污水中的主要污染物不包括（）', opts: ['A.悬浮物', 'B.有机物', 'C.氮气', 'D.重金属'], ans: 'C' },
+                    { q: '发现火灾时，应立即拨打的火警电话是（）', opts: ['A.110', 'B.120', 'C.119', 'D.122'], ans: 'C' },
+                    { q: '《建设项目环境保护管理条例》规定，建设项目需要配套建设的环境保护设施，必须与主体工程（）、同时施工、同时投产使用', opts: [
+                            'A.同时规划', 'B.同时设计', 'C.同时审批', 'D.同时立项'
+                        ], ans: 'B' },
+                    { q: '边坡破坏主要形式之一是（）', opts: ['A.侧向位移', 'B.岩爆', 'C.崩塌'], ans: 'C' },
+                    { q: '露天矿山日常的安全检查，包括检查临近最终边坡的采掘作业是否存在超挖（）行为', opts: ['A.平台', 'B.矿石', 'C.坡底'],
+                        ans: 'C' },
+                    { q: '溜井发生跑矿事故，正确处理方法之一是（）', opts: ['A.查明原因立即处理', 'B.查明原因待稳定后处理',
+                            'C.查明原因后，从溜井下部进入溜井处理'
+                        ], ans: 'B' },
+                    { q: '露天浅孔爆破（未形成台阶工作面）个别飞散物的最小安全允许距离（）m', opts: ['A.300', 'B.250', 'C.200'], ans: 'A' },
+                    { q: '尾矿库基建中用作支撑后期尾矿堆存体的坝是（）', opts: ['A.基建坝', 'B.堆积坝', 'C.初期坝'], ans: 'C' },
+                    { q: '孔外传爆管之间应留有足够的间距，导爆管网路采用雷管起爆时，应采取可靠措施，防止雷管的聚能穴切断导爆管而引起（）', opts: ['A.爆炸',
+                            'B.殉爆', 'C.拒爆'
+                        ], ans: 'C' },
+                    { q: '敷设起爆网路应有有经验的爆破员或爆破技术人员实施并实行（）', opts: ['A.双人作业制', 'B.单人作业制', 'C.技术负责制'],
+                        ans: 'A' },
+                    { q: '列车卸土作业，翻车时必须（）人操作，操作人员应位于车厢内侧', opts: ['A.2', 'B.3', 'C.多'], ans: 'A' },
+                    { q: '露天矿山采用铁路运输作业，具有运量大、运距长、（）等优点', opts: ['A.投资少', 'B.成本低', 'C.建设快'], ans: 'B' },
+                    { q: '尾矿库的事故应急预案管理应当作为（），纳入矿山企业的综合预案体系中加以管理', opts: ['A.处置方案', 'B.临时方案',
+                            'C.专项预案'
+                        ], ans: 'C' }
+                ],
+                multi: [
+                    { q: '我国现行的安全环保主要法规包括（）', opts: ['A.《中华人民共和国安全生产法》', 'B.《中华人民共和国环境保护法》',
+                            'C.《中华人民共和国大气污染防治法》', 'D.《中华人民共和国水污染防治法》'
+                        ], ans: 'ABCD' },
+                    { q: '生产经营单位从业人员的安全生产权利包括（）', opts: ['A.知情权', 'B.建议权', 'C.批评、检举、控告权', 'D.拒绝违章指挥权'],
+                        ans: 'ABCD' },
+                    { q: '下列属于危险废物的有（）', opts: ['A.废灯管', 'B.废化学品包装物', 'C.废切削液', 'D.废旧报纸'], ans: 'ABC' },
+                    { q: '水污染的主要防治措施有（）', opts: ['A.废水处理达标后排放', 'B.节约用水、循环用水', 'C.杜绝跑冒滴漏',
+                            'D.随意排放生产废水'
+                        ], ans: 'ABC' },
+                    { q: '安全生产中"三违"行为指的是（）', opts: ['A.违章指挥', 'B.违章作业', 'C.违反劳动纪律', 'D.违反法律法规'],
+                    ans: 'ABC' },
+                    { q: '大气污染物的来源包括（）', opts: ['A.工业生产废气', 'B.机动车尾气', 'C.扬尘', 'D.生活燃煤废气'], ans: 'ABCD' },
+                    { q: '灭火器的基本使用方法包括（）', opts: ['A.提', 'B.拔', 'C.握', 'D.压'], ans: 'ABCD' },
+                    { q: '生产经营单位应当教育和督促从业人员严格执行本单位的（）', opts: ['A.安全生产规章制度', 'B.安全操作规程', 'C.绩效考核制度',
+                            'D.考勤管理制度'
+                        ], ans: 'AB' },
+                    { q: '固体废物污染环境的防治原则是（）', opts: ['A.减量化', 'B.资源化', 'C.无害化', 'D.随意化'], ans: 'ABC' },
+                    { q: '高处作业的安全防护要求有（）', opts: ['A.佩戴安全带', 'B.设置安全网', 'C.搭设防护栏杆', 'D.穿防滑鞋'], ans: 'ABCD' },
+                    { q: '《安全生产法》规定，生产经营单位应当具备的安全生产条件所必需的资金投入，由（）予以保证', opts: ['A.生产经营单位的决策机构',
+                            'B.主要负责人', 'C.个人经营的投资人', 'D.财务部门'
+                        ], ans: 'ABC' },
+                    { q: '环境保护的主要内容包括（）', opts: ['A.防治污染', 'B.保护自然环境', 'C.节约资源能源', 'D.生态修复'],
+                    ans: 'ABCD' },
+                    { q: '触电急救的基本原则是（）', opts: ['A.迅速断电', 'B.就地抢救', 'C.准确方法', 'D.坚持不懈'], ans: 'ABCD' },
+                    { q: '排污单位应当依法履行（）等义务', opts: ['A.持证排污', 'B.按证排污', 'C.自行监测', 'D.信息公开'], ans: 'ABCD' },
+                    { q: '生产安全事故等级划分依据包括（）', opts: ['A.死亡人数', 'B.重伤人数', 'C.直接经济损失', 'D.事故发生地点'],
+                        ans: 'ABC' },
+                    { q: '下列属于节能措施的有（）', opts: ['A.采用节能设备', 'B.杜绝长明灯', 'C.优化生产工艺', 'D.随意使用能源'],
+                    ans: 'ABC' },
+                    { q: '安全检查的主要内容包括（）', opts: ['A.查思想', 'B.查管理', 'C.查隐患', 'D.查整改'], ans: 'ABCD' },
+                    { q: '噪声对人体的危害包括（）', opts: ['A.损伤听力', 'B.影响睡眠', 'C.诱发疾病', 'D.干扰交流'], ans: 'ABCD' },
+                    { q: '生产经营单位应当建立健全安全生产风险分级管控和隐患排查治理双重预防机制，（）', opts: ['A.辨识安全风险', 'B.评估风险等级',
+                            'C.落实管控措施', 'D.及时消除事故隐患'
+                        ], ans: 'ABCD' },
+                    { q: '建设项目环境影响评价文件分为（）', opts: ['A.环境影响报告书', 'B.环境影响报告表', 'C.环境影响登记表', 'D.环境验收报告'],
+                        ans: 'ABC' },
+                    { q: '焊接作业的安全防护要点有（）', opts: ['A.佩戴防护面罩', 'B.穿戴劳保用品', 'C.清理作业现场易燃物', 'D.配备灭火器材'],
+                        ans: 'ABCD' },
+                    { q: '危险化学品的储存要求包括（）', opts: ['A.分类存放', 'B.标识清晰', 'C.通风良好', 'D.远离火源'], ans: 'ABCD' },
+                    { q: '安全生产教育培训的内容包括（）', opts: ['A.安全法律法规', 'B.安全操作规程', 'C.应急处置技能', 'D.事故案例分析'],
+                        ans: 'ABCD' },
+                    { q: '土壤污染的主要来源有（）', opts: ['A.工业废渣', 'B.农药化肥', 'C.污水灌溉', 'D.生活垃圾'], ans: 'ABCD' },
+                    { q: '应急救援器材包括（）', opts: ['A.灭火器', 'B.急救箱', 'C.安全带', 'D.应急照明'], ans: 'ABCD' },
+                    { q: '生产经营单位不得安排（）从事接触职业病危害的作业', opts: ['A.未成年工', 'B.孕期女职工', 'C.哺乳期女职工',
+                            'D.成年男性职工'
+                        ], ans: 'ABC' },
+                    { q: '环保设施的管理要求包括（）', opts: ['A.正常运行', 'B.定期维护', 'C.专人管理', 'D.随意停运'], ans: 'ABC' },
+                    { q: '下列属于违章作业行为的有（）', opts: ['A.不佩戴劳保用品', 'B.跨越设备运转部位', 'C.违规操作设备', 'D.酒后上岗作业'],
+                        ans: 'ABCD' },
+                    { q: '突发环境事件应急处置措施包括（）', opts: ['A.控制污染源', 'B.疏散人员', 'C.监测环境质量', 'D.开展污染治理'],
+                        ans: 'ABCD' },
+                    { q: '安全生产投入主要用于（）', opts: ['A.安全设施建设', 'B.劳动防护用品配备', 'C.安全培训教育', 'D.应急救援器材购置'],
+                        ans: 'ABCD' }
+                ],
+                judge: [
+                    { q: '生产经营单位可以以货币替代劳动防护用品的发放。', ans: '错误' },
+                    { q: '环境保护法规定，一切单位和个人都有保护环境的义务。', ans: '正确' },
+                    { q: '从业人员发现安全隐患，可自行处理，无需上报。', ans: '错误' },
+                    { q: '危险废物可以与生活垃圾混合存放。', ans: '错误' },
+                    { q: '安全生产工作实行管行业必须管安全、管业务必须管安全、管生产经营必须管安全。', ans: '正确' },
+                    { q: '企业可以私自排放未经处理的生产废水。', ans: '错误' },
+                    { q: '灭火时应站在火焰的上风向进行操作。', ans: '正确' },
+                    { q: '生产经营单位应当建立安全生产教育和培训档案，如实记录培训情况。', ans: '正确' },
+                    { q: '噪声不会对人体健康造成危害。', ans: '错误' },
+                    { q: '任何单位和个人都有权对污染环境、破坏生态的行为进行举报。', ans: '正确' },
+                    { q: '高处作业时，只要小心操作，可以不系安全带。', ans: '错误' },
+                    { q: '一般工业固体废物可依法进行综合利用。', ans: '正确' },
+                    { q: '生产经营单位的从业人员不服从管理，违反安全生产规章制度的，由生产经营单位给予批评教育，依照有关规章制度给予处分。', ans: '正确' },
+                    { q: '建设项目的环保设施可以先停运，待生产任务完成后再恢复运行。', ans: '错误' },
+                    { q: '发生触电事故时，应先直接用手拉开触电人员。', ans: '错误' },
+                    { q: '排污单位应当按照国家规定缴纳排污费。', ans: '正确' },
+                    { q: '安全警示标志可以随意设置或遮挡。', ans: '错误' },
+                    { q: '节约能源是我国的基本国策。', ans: '正确' },
+                    { q: '特种作业人员必须经专门的安全作业培训，取得相应资格，方可上岗作业。', ans: '正确' },
+                    { q: '企业可以随意丢弃危险废物。', ans: '错误' },
+                    { q: '带式输送机更换拦板、刮泥板、托辊时应停车，切断电源，无专人监护时要特别注意安全。', ans: '错误' },
+                    { q: '入井作业人员应掌握爆破时间、地点、警戒范围，在爆破之前必须撤离危险区。', ans: '正确' },
+                    { q: '露天矿山主要运输道路即使能够保证安全运行，也必须设置汽车避让道。', ans: '错误' },
+                    { q: '大气污染只对环境有危害，对人体没有影响。', ans: '错误' },
+                    { q: '露天采场上、下台阶之间，可设带扶手的行人梯子、台阶（踏步）或路堑作人行通道。', ans: '正确' },
+                    { q: '爆破工作开始前，必须确定危险区的边界，并根据需要设置明显的标志。', ans: '错误' },
+                    { q: '露天矿山铁路运输，在运行区间内和站线进行甩车作业时，注意采取防溜措施。', ans: '错误' },
+                    { q: '检查人员在对爆破器材生产线、储存库、爆破现场等地进行检查时，应穿防静电服装和软底鞋（最好是导电胶底，鞋底不允许有金属钉或掌），关闭无线电通讯设备。严禁随身携带火源及易燃、易爆物品。',
+                        ans: '正确' },
+                    { q: '尾矿排放进入尾矿库后，为了控制库内水位，必须把澄清后的尾矿水以及汇集的雨水等及时地从库内排出或作为生产水循环使用，因此必须在库内建设可靠的排水系统。',
+                        ans: '正确' },
+                    { q: '为节省时间，提高运输效率，矿用载重汽车可在行进中升降车斗。', ans: '错误' }
+                ]
+            },
+            wuzi: {
+                name: '物资公共题',
+                icon: '📦',
+                color: '#5b21b6',
+                single: [
+                    { q: '公开招标，是指招标人以（）的方式邀请不特定的法人或者其他组织投标。', opts: ['A.招标邀请', 'B.谈判邀请', 'C.招标公告',
+                            'D.行政命令'
+                        ], ans: 'C' },
+                    { q: '邀请招标，是指招标人以（）的方式邀请特定的法人或者其他组织投标。', opts: ['A.招标邀请书', 'B.投标邀请书', 'C.招标公告',
+                            'D.招标邀请函'
+                        ], ans: 'B' },
+                    { q: '招标文件的发售期不得少于（）日，自招标文件开始发出之日起至投标人提交投标文件截止之日止（也称"等标期"），法定必招项目最短不得少于（）日，公司制度规定一般招标项目，原则上不得少于（）日。',
+                        opts: ['A.5；15；7', 'B.5；15；8', 'C.5；20；7', 'D.5；20；8'], ans: 'D' },
+                    { q: '询比采购，是指由（）个及以上符合资格条件的供应商（）报出不得更改的价格，经评审确定成交供应商的采购方式。', opts: ['A.2；一次',
+                            'B.2；多次', 'C.3；一次', 'D.3；多次'
+                        ], ans: 'C' },
+                    { q: '货物采购前要遵循（）的原则，进行充分的市场调研，并根据市场供需关系、价格走势，实施择机采购。', opts: ['A.择机而入',
+                            'B.适时采购', 'C.平衡利库', 'D.先利库后订货'
+                        ], ans: 'C' },
+                    { q: '工程类、货物类、服务类单项合同估算价（概算价或预算价）分别达到以下标准的一般应采用招标的方式？（）', opts: ['A.400万元、200万元、50万元',
+                            'B.400万元、100万元、50万元', 'C.400万元、100万元、100万元', 'D.400万元、200万元、100万元'
+                        ], ans: 'D' },
+                    { q: '下列不属于招标文件构成部分的是（）', opts: ['A.投标人须知', 'B.招标公告', 'C.投标文件', 'D.评标办法'], ans: 'C' },
+                    { q: '招标过程中，应在开标前（）小时内从专家库中抽取专家。', opts: ['A.12小时', 'B.24小时', 'C.48小时', 'D.72小时'],
+                        ans: 'C' },
+                    { q: '潜在供应商仅能参与（）采购项目', opts: ['A.公开询比', 'B.邀请询比', 'C.公开招标', 'D.邀请招标'], ans: 'C' },
+                    { q: '采购实施单位应当依据采购执行计划首先组织编制（），按照公司采购管理制度规定的程序实施采购，并确保采购结果满足采购计划的要求。', opts: ['A.采购方案',
+                            'B.招标文件', 'C.评标办法', 'D.合同条件'
+                        ], ans: 'A' },
+                    { q: '招标文件编制过程中，可以对潜在投标供应商设置（）资格条件。', opts: ['A.限定所有制形式，如：国有、独资、合资等',
+                            'B.设置注册资本', 'C.要求无不良征信记录', 'D.设定特定金额的业绩或对代理商提出业绩要求'
+                        ], ans: 'C' },
+                    { q: '关于招标采购，以下行为正确的是（）', opts: ['A.招标人在发布公告、发出投标邀请书后或者售出招标文件或资格预审文件后擅自终止招标',
+                            'B.依法必须公开招标的项目，其资格预审公告和招标公告在依法指定的媒介发布', 'C.招标文件中规定最低投标限价',
+                            'D.潜在投标人或者其他利害关系人对资格预审文件或招标文件提出的异议，对收到的异议作出答复前，继续招标投标活动'
+                        ], ans: 'B' },
+                    { q: '招标评审过程中，以下做法正确的是（）', opts: ['A.将产品先进性、稳定性、成熟性，服务满意度、市场认可度、占有率等模糊表述，规定由专家自由打分',
+                            'B.依法必须进行招标的项目，以特定行政区域或者特定行业的业绩、奖项作为加分条件', 'C.对供应商采取相同的评审标准',
+                            'D.评审因素的指标量化为区间的，评审标准的分值未量化到区间'
+                        ], ans: 'C' },
+                    { q: '招标人应当自收到评标报告之日起（）内公示中标候选人，公示期不得少于（）。', opts: ['A.3日；3日', 'B.3日；5日',
+                            'C.5日；5日', 'D.5日；3日'
+                        ], ans: 'A' },
+                    { q: '集中采购按采购形式不同可分为带量集采、框架集采和入围集采。（）是指通过公开招标采购确定供应商、价格（定价机制），与供应商签订框架协议，在协议约定期限内以采购订单（合同）的形式执行协议的集中采购形式。',
+                        opts: ['A.带量集采', 'B.框架集采', 'C.入围集采', 'D.区域联合采购'], ans: 'B' },
+                    { q: '物资需求计划编制的依据不包括（）', opts: ['A.项目策划', 'B.设计图纸', 'C.采购信息', 'D.施工进度计划'], ans: 'C' },
+                    { q: 'Q235的钢材材质表示中，Q表示（）', opts: ['A.强度', 'B.硬度', 'C.质量系数', 'D.屈服点'], ans: 'D' },
+                    { q: 'HRB400E的钢材材质表示中，E表示（）', opts: ['A.强度', 'B.硬度', 'C.抗震', 'D.防腐'], ans: 'C' },
+                    { q: '混凝土标准试块的尺寸是（）', opts: ['A.边长为150mm的正立方体', 'B.边长为100mm的正立方体',
+                            'C.直径为150mm，高为150mm的圆柱体', 'D.直径为100mm，高为100mm的圆柱体'
+                        ], ans: 'A' },
+                    { q: '混凝土试块标养时间是（）天', opts: ['A.3', 'B.7', 'C.28', 'D.30'], ans: 'C' },
+                    { q: '项目需求计划中，需采购DN50钢管，其中DN表示意义为（）', opts: ['A.表示外径', 'B.表示内径', 'C.表示公称直径',
+                            'D.表示材质'
+                        ], ans: 'C' },
+                    { q: '用于大体积混凝土或长距离运输混凝土的外加剂是（）', opts: ['A.早强剂', 'B.缓凝剂', 'C.引气剂', 'D.减水剂'], ans: 'B' },
+                    { q: '混凝土规格型号表示方式中，F150表示（）', opts: ['A.强度等级', 'B.抗冻等级', 'C.抗渗等级', 'D.防腐等级'], ans: 'B' },
+                    { q: '（）是钢材最主要的锈蚀形式。', opts: ['A.化学锈蚀', 'B.电化学腐蚀', 'C.水化反应', 'D.氧化反应'], ans: 'B' },
+                    { q: '不宜用于大体积混凝土工程的水泥是（）', opts: ['A.普通硅酸盐水泥', 'B.矿渣硅酸盐水泥', 'C.粉煤灰水泥', 'D.火山灰水泥'],
+                        ans: 'A' },
+                    { q: '在建设单位和工程监理单位人员的见证下，由施工单位试验人员对工程材料及构件进行现场取样的过程称为（）', opts: ['A.现场取样',
+                            'B.抽样', 'C.见证取样', 'D.见证抽样'
+                        ], ans: 'C' },
+                    { q: '（）广泛用于各类建筑防水、防潮工程，尤其适用于寒冷地区和结构变形频繁的建筑物防水。', opts: ['A.再生橡胶改性沥青防水卷材',
+                            'B.SBS橡胶改性沥青防水卷材', 'C.APP改性沥青防水卷材', 'D.焦油沥青耐低温防水卷材'
+                        ], ans: 'B' },
+                    { q: '物料分类有很多方式，下列不属于按用途分类的是（）', opts: ['A.非金属', 'B.半成品', 'C.产品', 'D.原材料'], ans: 'A' },
+                    { q: '以下哪项不属于限额领料的确定依据（）', opts: ['A.技术节约措施新规定的单方用料量', 'B.项目进度计划', 'C.正确的工程量',
+                            'D.定额的正确选用'
+                        ], ans: 'B' },
+                    { q: '工程材料成本的盈亏主要核算（）', opts: ['A.量差和价差', 'B.采购费和储存费', 'C.运输费和采购费', 'D.仓储费和损耗费'],
+                        ans: 'A' }
+                ],
+                multi: [
+                    { q: '按照与供应商的合作程度，并结合综合实力、考评结果，供应商分为（）', opts: ['A.战略供应商', 'B.潜在供应商', 'C.合格供应商',
+                            'D.黑名单供应商', 'E.不合格供应商'
+                        ], ans: 'BCE' },
+                    { q: '根据供应商不良行为的严重程度，对供应商不良行为的处理主要采取以下哪几种方式（）', opts: ['A.供应商年度综合评价中酌情扣分',
+                            'B.警告', 'C.通报', 'D.暂停交易', 'E.移出合格供应商库', 'F.列入"黑名单"'
+                        ], ans: 'ABCDEF' },
+                    { q: '采购管理办法中决策权限清单对应的审批事项包括哪些（）', opts: ['A.采购特殊事项', 'B.招标采购方案', 'C.招标采购结果',
+                            'D.非招标采购方案', 'E.非招标采购结果'
+                        ], ans: 'ABDE' },
+                    { q: '集中采购按采购形式不同可分为（）', opts: ['A.带量集采', 'B.框架集采', 'C.入围集采', 'D.战略采购',
+                            'E.电子商城采购'
+                        ], ans: 'ABC' },
+                    { q: '下列情形，可以采用适宜的非招标采购方式进行紧急采购（）', opts: ['A.涉及自然灾害、公共卫生、社会安全等重大突发事件需应急处置的',
+                            'B.涉及事故抢修、紧急故障处理、安全环保处理等不可预知的紧急情况急需处理的',
+                            'C.新中标项目需快速进场的，正常采购程序影响履约的',
+                            'D.新中标项目需快速进场的（需附书面证明文件），正常采购程序影响履约',
+                            'E.施工过程中突发紧急任务（需附书面证明文件），正常采购程序影响履约的'
+                        ], ans: 'ABDE' },
+                    { q: '以下属于无效投标书的情形有（）', opts: ['A.未按规定提交投标保证金', 'B.未按照招标文件要求密封', 'C.联合体投标未附联合协议',
+                            'D.不符合招标文件中规定的实质性要求', 'E.投标报价略低于最高限价'
+                        ], ans: 'ABCD' },
+                    { q: '电子采购（E-Procurement）的优势在于（）', opts: ['A.提高采购透明度', 'B.降低交易成本', 'C.缩短采购周期',
+                            'D.减少人为错误', 'E.完全杜绝腐败'
+                        ], ans: 'ABCD' },
+                    { q: '采购合同的主要条款包括（）', opts: ['A.采购标的', 'B.数量、质量', 'C.价格、付款方式', 'D.交货期、交货地点',
+                            'E.违约责任'
+                        ], ans: 'ABCDE' },
+                    { q: '招标活动应遵守国家相关法律法规，遵循（）的基本原则。', opts: ['A.公开', 'B.公平', 'C.公正', 'D.诚实信用',
+                            'E.依法依规'
+                        ], ans: 'ABCD' },
+                    { q: '导致采购成本上升的因素通常包括（）', opts: ['A.原材料价格上涨', 'B.紧急采购', 'C.小批量采购', 'D.质量检验标准放宽',
+                            'E.汇率波动'
+                        ], ans: 'ABCE' },
+                    { q: '战略采购与普通采购的区别主要体现在（）', opts: ['A.关注长期总成本', 'B.关注短期单价', 'C.注重供应商关系',
+                            'D.仅考虑交易价格', 'E.跨部门协同'
+                        ], ans: 'ACE' },
+                    { q: '采购合同中的价格条款一般应包括（）', opts: ['A.计价单位', 'B.单价', 'C.总价', 'D.运费承担方', 'E.付款方式'],
+                        ans: 'ABCD' },
+                    { q: '采购合同纠纷的处理方式包括（）', opts: ['A.协商', 'B.调解', 'C.仲裁', 'D.诉讼', 'E.单方面违约'], ans: 'ABCD' },
+                    { q: '属于集中采购优点的是（）', opts: ['A.获得规模效应，降低价格', 'B.采购程序规范，易于控制', 'C.对市场变化反应敏捷',
+                            'D.减少重复采购，降低管理成本', 'E.各使用部门自主性强'
+                        ], ans: 'ABD' },
+                    { q: '招标采购中，资格审查的内容通常包括（）', opts: ['A.法人资格', 'B.财务状况', 'C.类似业绩', 'D.信誉记录',
+                            'E.投标报价'
+                        ], ans: 'ABCD' },
+                    { q: '钢材验收数量，以下哪些说法正确（）', opts: ['A.盘圆过磅验收并留存磅单', 'B.钢板卷尺测量计平方数',
+                            'C.直螺纹钢筋一般用油漆或石笔清点支数', 'D.无缝管一般按理计'
+                        ], ans: 'AC' },
+                    { q: '施工设备同时满足以下（）条件，纳入管理范畴', opts: ['A.耐用年限在一年以上', 'B.可以重复使用',
+                            'C.单台设备不含税金额1万元（含）以上', 'D.单价在一万元以下'
+                        ], ans: 'AC' },
+                    { q: '下列关于特种设备哪些说法是正确的（）', opts: ['A.特种设备的安装、拆卸可以由项目部人员进行操作',
+                            'B.特种设备安装、拆卸前，主责部门应按规定向特种设备安全监察部门办理告知手续，不得擅自安装、拆卸特种设备',
+                            'C.特种设备在投入使用前3日内，主责部门向市、区市场监督部门办理注册登记', 'D.特种设备操作人员应持有特种作业操作证'
+                        ], ans: 'BD' },
+                    { q: '以下哪些设备属于特种设备？（）', opts: ['A.锅炉', 'B.压力容器', 'C.汽车起重机', 'D.电梯'], ans: 'ABD' },
+                    { q: '工程建设项目五方主体包括哪些（）', opts: ['A.建设单位', 'B.勘察单位', 'C.试验单位', 'D.设计单位', 'E.施工单位',
+                            'F.监理单位'
+                        ], ans: 'ABDEF' },
+                    { q: '关于水泥储存，正确的做法是（）', opts: ['A.仓库地坪要高出室外地面', 'B.袋装水泥码垛不宜过高', 'C.不同标号水泥可混仓堆放以节省空间',
+                            'D.遵循先进先出原则', 'E.注意防潮'
+                        ], ans: 'ABDE' },
+                    { q: '项目部在编制主要物资需用计划时，主要依据包括（）', opts: ['A.施工图纸', 'B.物资损耗系数', 'C.施工组织设计',
+                            'D.个人经验估算', 'E.供应商推荐数量'
+                        ], ans: 'ABC' },
+                    { q: '项目物资领用应遵循的原则包括（）', opts: ['A.谁使用、谁领用', 'B.谁保管、谁负责', 'C.可以口头通知后直接拿取',
+                            'D.无授权人员不得领料', 'E.先领用后补单'
+                        ], ans: 'ABD' },
+                    { q: '关于废旧物资处置，正确的做法有（）', opts: ['A.处置资金及时上交财务', 'B.不需要进行评估', 'C.国内在宜企拍平台拍卖处置',
+                            'D.处置过程需多人参与并签认', 'E.可以设立账外小金库'
+                        ], ans: 'ACD' },
+                    { q: '物资验收的具体程序包括（）', opts: ['A.验收准备', 'B.核对资料', 'C.检验实物', 'D.办理入库手续',
+                            'E.直接投入使用'
+                        ], ans: 'ABCD' },
+                    { q: '以下属于周转材料的有（）', opts: ['A.组合钢模板', 'B.钢管扣件', 'C.水泥', 'D.大型工字钢支撑', 'E.润滑油'],
+                        ans: 'ABD' },
+                    { q: '仓储管理的基本原则有（）', opts: ['A.先进先出', 'B.分类存放', 'C.安全防护', 'D.账实相符', 'E.节约空间'],
+                        ans: 'ABCDE' },
+                    { q: '设备维护的主要内容包括（）', opts: ['A.日常清洁', 'B.定期检查', 'C.润滑保养', 'D.易损件更换', 'E.故障维修'],
+                        ans: 'ABCD' },
+                    { q: '设备使用的安全规程包括（）', opts: ['A.操作人员持证上岗', 'B.遵守操作规范', 'C.做好安全防护', 'D.禁止违规操作',
+                            'E.定期安全检查'
+                        ], ans: 'ABCDE' },
+                    { q: '项目经济活动分析，主要是对以下哪几种量进行比对分析（）', opts: ['A.实际消耗量', 'B.采购量', 'C.理论消耗量',
+                            'D.施工图预算量'
+                        ], ans: 'ACD' }
+                ],
+                fill: [
+                    { q: '采购合同中，明确双方权利义务、避免纠纷的核心条款是（）。', ans: '违约责任' },
+                    { q: '公开招标的评标委员会人数至少为（）人。', ans: '5' },
+                    { q: '常用的采购方式中，（）适用于采购数量大、金额高、竞争激烈的物资。', ans: '公开招标' },
+                    { q: '采购合同的终止条件一般包括合同履行完毕、双方协商终止和（）。', ans: '单方违约导致合同无法履行' },
+                    { q: '采购管理的核心目标是实现"5R"，即适价、适质、适量、适时、（）。', ans: '适地' },
+                    { q: '采购合同中，最核心的质量条款应明确物资的（）和验收标准。', ans: '质量要求' },
+                    { q: '经济订货批量（EOQ）模型主要平衡订货成本与（）两种成本。', ans: '储存成本' },
+                    { q: '采购合同生效必须具备：当事人具有民事行为能力、意思表示真实和（）三个要件。', ans: '内容合法' },
+                    { q: '合同中的不可抗力条款通常是指发生自然灾害、战争等无法预见且（）的事件。', ans: '无法避免' },
+                    { q: 'C级供应商是指符合供应商准入条件，并经过审查的潜在供应商，或年度考核评价不低于（）分的已在库合格供应商。', ans: '70' },
+                    { q: '供应商按专业分类可分为货物类、工程类、（）供应商。', ans: '服务类' },
+                    { q: '评标专家按所属范围可分为内部评标专家、（）评标专家。', ans: '外部' },
+                    { q: '非招标采购中，采购人自行组建采购小组，成员应为（）人及以上单数。', ans: '3' },
+                    { q: '需求计划按集采目录分类可分为一级集采计划、（）集采计划、非集采计划。', ans: '二级' },
+                    { q: '计划授权的两种方式是申请授权和（）授权。', ans: '主动' },
+                    { q: '混凝土的抗渗等级用代号P表示，如P6表示混凝土抵抗（）MPa的液体压力而不渗水。', ans: '0.6' },
+                    { q: '钢筋按生产工艺进行分类，可分为热轧钢筋、冷轧钢筋、（）钢筋和热处理钢筋。', ans: '冷拉' },
+                    { q: '划分材料采购环节与材料保管环节责任的分界线是（）。', ans: '验收入库' },
+                    { q: '砌筑砂浆的流动性指标用（）表示。', ans: '沉入度' },
+                    { q: '混凝土在运输时不应产生离析和分层现象，如有离析现象，则必须在浇筑混凝土前进行（）。', ans: '二次搅拌' },
+                    { q: '公司制度规定，因施工过程中因设计变更、优化设计等原因，闲置（）个月以上的物资称为闲置物资。', ans: '六' },
+                    { q: '物资管理办法所称的物资主要包括工程材料、（）和施工材料。', ans: '工程设备' },
+                    { q: '特种设备使用单位在投入使用前或使用后（）日内，向市、区市场监督部门办理注册登记。', ans: '30' },
+                    { q: '不含税单价价值在200元至（）元以下，称为工机具。', ans: '10000' },
+                    { q: '氧气瓶与乙炔瓶的安全距离应保持在（）米以上。', ans: '5' },
+                    { q: '仓储管理中，为了加速出入库，托盘就地堆叠存储时通常使用（）进行存取作业。', ans: '叉车' },
+                    { q: '设备安装完成后，应首先进行（）。', ans: '调试运行' },
+                    { q: '设备折旧的最常用计算方法是（）。', ans: '年限平均法' },
+                    { q: '仓储管理的流程包括入库、存储、出库和（）。', ans: '盘点' },
+                    { q: '公司制度规定，项目施工材料需求计划，工程部门提出审核后，（）负责审批。', ans: '生产负责人/生产经理' }
+                ]
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════
+        // 2. 常量
+        // ═══════════════════════════════════════════════════════
+        const SUBJECTS = [
+            { key: 'engineering', types: [{ v: 'single', l: '单选题（60题）' }, { v: 'multi', l: '多选题（60题）' }, { v: 'fill',
+                    l: '填空题（30题）' }] },
+            { key: 'finance', types: [{ v: 'single', l: '单选题（30题）' }, { v: 'multi', l: '多选题（30题）' }, { v: 'fill',
+                    l: '填空题（30题）' }] },
+            { key: 'business', types: [{ v: 'single', l: '单选题（60题）' }, { v: 'multi', l: '多选题（45题）' }, { v: 'fill',
+                    l: '填空题（30题）' }] },
+            { key: 'safety', types: [{ v: 'single', l: '单选题（30题）' }, { v: 'multi', l: '多选题（30题）' }, { v: 'judge',
+                    l: '判断题（30题）' }] },
+            { key: 'wuzi', types: [{ v: 'single', l: '单选题（30题）' }, { v: 'multi', l: '多选题（30题）' }, { v: 'fill',
+                    l: '填空题（30题）' }] },
+        ];
+
+        const COLORS = {
+            engineering: { accent: '#1a6faf', iconBg: '#e8f0fe', iconColor: '#1a6faf' },
+            finance: { accent: '#166534', iconBg: '#e8fdf0', iconColor: '#166534' },
+            business: { accent: '#92400e', iconBg: '#fef3e2', iconColor: '#92400e' },
+            safety: { accent: '#991b1b', iconBg: '#fef2f2', iconColor: '#991b1b' },
+            wuzi: { accent: '#5b21b6', iconBg: '#f3e8ff', iconColor: '#5b21b6' },
+        };
+
+        const MOCK_LIST = [
+            ["😂", "哈哈哈哈哈哈！", "这也能答错？下次加油哦～"],
+            ["🤣", "嘻嘻嘻！", "答错喽，多背两遍！"],
+            ["😜", "哦豁～", "错了错了，继续努力！"],
+            ["🤡", "小丑竟是我自己", "这题下次一定要会！"],
+            ["💀", "寄！", "背题不认真啊！"],
+            ["😈", "嗯哼～", "还差得远呢！"],
+            ["🫵", "就这？", "继续努力，不能放弃！"],
+            ["🐔", "没背会就来答题？", "下次先把题背熟！"],
+            ["😏", "嘿嘿嘿", "被我抓到了～"],
+            ["🙃", "答案就在旁边", "你愣是没看到？"],
+        ];
+
+        // ═══════════════════════════════════════════════════════
+        // 3. 全局变量
+        // ═══════════════════════════════════════════════════════
+        let configuredQuestions = {};
+        let sessionResults = {};
+        let currentSubjectKey = null;
+        let currentQuestions = [];
+        let currentIdx = 0;
+        let currentScore = 0;
+        let currentWrong = [];
+        let answerShown = false;
+        let mockTimer = null;
+        let timerInterval = null;
+        let timeLeft = 30;
+        let isTimeUp = false;
+        let answerLog = [];
+        let questionStartTime = 0;
+
+        // ═══════════════════════════════════════════════════════
+        // 4. 核心函数
+        // ═══════════════════════════════════════════════════════
+
+        // 4.1 配置页
+        function renderConfig() {
+            const grid = document.getElementById('config-grid');
+            grid.innerHTML = '';
+            SUBJECTS.forEach(sub => {
+                const d = DB[sub.key];
+                const c = COLORS[sub.key];
+                const maxMap = { single: d.single?.length || 0, multi: d.multi?.length || 0, fill: d.fill?.length || 0,
+                    judge: d.judge?.length || 0 };
+                const total = Object.values(maxMap).reduce((a, b) => a + b, 0);
+                const firstMax = maxMap[sub.types[0].v] || 10;
+                const typeOpts = sub.types.map(t => `<option value="${t.v}">${t.l}</option>`).join('');
+                const card = document.createElement('div');
+                card.className = 'config-card';
+                card.style.setProperty('--c-accent', c.accent);
+                card.innerHTML = `
+              <div class="cc-head">
+                <div class="cc-icon" style="background:${c.iconBg};color:${c.iconColor}">${d.icon}</div>
+                <div><div class="cc-name">${d.name}</div><div class="cc-total">共 ${total} 题</div></div>
+              </div>
+              <div class="field">
+                <label>题　型</label>
+                <select id="type_${sub.key}" onchange="cfgUpdateRange('${sub.key}')">${typeOpts}</select>
+              </div>
+              <div class="field-row2">
+                <div class="field"><label>起始</label><input type="number" id="from_${sub.key}" value="1" min="1"></div>
+                <div class="field"><label>结束</label><input type="number" id="to_${sub.key}" value="${firstMax}" min="1"></div>
+              </div>
+              <div class="field"><label>抽题数量</label><input type="number" id="count_${sub.key}" value="${Math.min(10,firstMax)}" min="1"></div>
+            `;
+                grid.appendChild(card);
+            });
+        }
+
+        function cfgUpdateRange(key) {
+            const type = document.getElementById('type_' + key).value;
+            const d = DB[key];
+            const maxMap = { single: d.single?.length || 0, multi: d.multi?.length || 0, fill: d.fill?.length || 0,
+                judge: d.judge?.length || 0 };
+            const max = maxMap[type] || 10;
+            document.getElementById('to_' + key).value = max;
+            document.getElementById('count_' + key).value = Math.min(10, max);
+        }
+
+        // 4.2 夜间模式
+        function toggleNightMode() {
+            const checked = document.getElementById('nightMode').checked;
+            const root = document.documentElement.style;
+            if (checked) {
+                root.setProperty('--bg', '#1a1a2e');
+                root.setProperty('--navy', '#16213e');
+                root.setProperty('--navy2', '#0f3460');
+                root.setProperty('--card', '#1e293b');
+                root.setProperty('--text', '#e2e8f0');
+                root.setProperty('--sub', '#94a3b8');
+                root.setProperty('--border', '#334155');
+                root.setProperty('--gold', '#f6ad55');
+                root.setProperty('--gold-light', '#fbd38d');
+                root.setProperty('--green-bg', '#1a3a2a');
+                localStorage.setItem('nightMode', 'true');
+            } else {
+                root.setProperty('--bg', '#edf0f7');
+                root.setProperty('--navy', '#0f2744');
+                root.setProperty('--navy2', '#1a3a5c');
+                root.setProperty('--card', '#ffffff');
+                root.setProperty('--text', '#1a2535');
+                root.setProperty('--sub', '#7a8599');
+                root.setProperty('--border', '#dde3ee');
+                root.setProperty('--gold', '#d4a843');
+                root.setProperty('--gold-light', '#f5d78e');
+                root.setProperty('--green-bg', '#e8f7ef');
+                localStorage.setItem('nightMode', 'false');
+            }
+        }
+
+        function restoreNightMode() {
+            const saved = localStorage.getItem('nightMode');
+            const checkbox = document.getElementById('nightMode');
+            if (checkbox) {
+                if (saved === 'true') {
+                    checkbox.checked = true;
+                    toggleNightMode();
+                } else {
+                    checkbox.checked = false;
+                }
+            }
+        }
+
+        // 4.3 开始选题
+        function goToSelect() {
+            const timeLimit = parseInt(document.getElementById('timeLimit').value) || 30;
+            const enableDedup = document.getElementById('enableDedup').checked;
+            const practiceMode = document.getElementById('practiceMode').value;
+            const shuffleOptions = document.getElementById('shuffleOptions').checked;
+            window._quizConfig = { timeLimit, enableDedup, practiceMode, shuffleOptions };
+            window._questionHistory = window._questionHistory || {};
+
+            configuredQuestions = {};
+            sessionResults = {};
+            answerLog = [];
+
+            SUBJECTS.forEach(sub => {
+                const type = document.getElementById('type_' + sub.key).value;
+                const from = parseInt(document.getElementById('from_' + sub.key).value) - 1;
+                const to = parseInt(document.getElementById('to_' + sub.key).value);
+                const cnt = parseInt(document.getElementById('count_' + sub.key).value);
+                const pool = (DB[sub.key][type] || []).slice(from, to);
+
+                let picked = [];
+                const poolWithId = pool.map((q, idx) => ({ ...q, _id: `${sub.key}_${type}_${from + idx}` }));
+
+                if (practiceMode === 'sequential') {
+                    picked = poolWithId.slice(0, Math.min(cnt, poolWithId.length));
+                    if (enableDedup) {
+                        if (!window._questionHistory[sub.key]) window._questionHistory[sub.key] = [];
+                        picked.forEach(q => window._questionHistory[sub.key].push(q._id));
+                    }
+                    configuredQuestions[sub.key] = picked.map(q => ({ ...q, type }));
+                    return;
+                }
+
+                if (practiceMode === 'wrong') {
+                    const wrongKey = `wrong_${sub.key}_${type}`;
+                    const wrongData = JSON.parse(localStorage.getItem(wrongKey) || '[]');
+                    const wrongIdSet = new Set(wrongData.map(w => w._id || w.id));
+                    const wrongPool = poolWithId.filter(q => wrongIdSet.has(q._id));
+                    const normalPool = poolWithId.filter(q => !wrongIdSet.has(q._id));
+                    const shuffledWrong = [...wrongPool].sort(() => Math.random() - 0.5);
+                    const shuffledNormal = [...normalPool].sort(() => Math.random() - 0.5);
+                    picked = shuffledWrong.slice(0, cnt);
+                    if (picked.length < cnt) {
+                        const need = cnt - picked.length;
+                        picked = [...picked, ...shuffledNormal.slice(0, need)];
+                    }
+                    if (enableDedup) {
+                        if (!window._questionHistory[sub.key]) window._questionHistory[sub.key] = [];
+                        picked.forEach(q => window._questionHistory[sub.key].push(q._id));
+                    }
+                    configuredQuestions[sub.key] = picked.map(q => ({ ...q, type }));
+                    return;
+                }
+
+                if (enableDedup) {
+                    const history = window._questionHistory[sub.key] || [];
+                    const doneSet = new Set(history);
+                    const undone = poolWithId.filter(q => !doneSet.has(q._id));
+                    const done = poolWithId.filter(q => doneSet.has(q._id));
+                    picked = [...undone].sort(() => Math.random() - .5).slice(0, cnt);
+                    if (picked.length < cnt) {
+                        const need = cnt - picked.length;
+                        picked = [...picked, ...[...done].sort(() => Math.random() - .5).slice(0, need)];
+                    }
+                    if (!window._questionHistory[sub.key]) window._questionHistory[sub.key] = [];
+                    picked.forEach(q => window._questionHistory[sub.key].push(q._id));
+                } else {
+                    picked = [...poolWithId].sort(() => Math.random() - .5).slice(0, Math.min(cnt, poolWithId.length));
+                }
+
+                configuredQuestions[sub.key] = picked.map(q => ({ ...q, type }));
+            });
+
+            renderSelectPage();
+            showPage('select');
+        }
+
+        // 4.4 选择专业页
+        function renderSelectPage() {
+            const summary = document.getElementById('score-summary');
+            summary.innerHTML = SUBJECTS.map(sub => {
+                const d = DB[sub.key];
+                const r = sessionResults[sub.key];
+                const total = configuredQuestions[sub.key]?.length || 0;
+                return `<div class="ss-item">
+              <div class="ss-name">${d.icon} ${d.name}</div>
+              <div class="ss-score ${r?'has-score':''}">${r ? r.score+'/'+total : '—/'+total}</div>
+            </div>`;
+            }).join('');
+
+            const btns = document.getElementById('subject-btns');
+            btns.innerHTML = '';
+            SUBJECTS.forEach(sub => {
+                const d = DB[sub.key];
+                const c = COLORS[sub.key];
+                const r = sessionResults[sub.key];
+                const total = configuredQuestions[sub.key]?.length || 0;
+                const isDone = !!r;
+                const btn = document.createElement('button');
+                btn.className = 'subject-btn' + (isDone ? ' done' : '');
+                btn.style.setProperty('--c-accent', c.accent);
+                btn.onclick = () => startSubjectQuiz(sub.key);
+                btn.innerHTML = `
+              <div class="sb-icon" style="background:${c.iconBg};color:${c.iconColor}">${d.icon}</div>
+              <div class="sb-name">${d.name}</div>
+              <div class="sb-count">${total} 题</div>
+              <div class="sb-status">${isDone ? '✓ 已完成 '+r.score+'/'+total+' 分' : '点击开始答题'}</div>
+            `;
+                btns.appendChild(btn);
+            });
+
+            const anyDone = SUBJECTS.some(s => sessionResults[s.key]);
+            document.getElementById('finish-btn').disabled = !anyDone;
+        }
+
+        // 4.5 开始答题
+        function startSubjectQuiz(key) {
+            currentSubjectKey = key;
+            currentQuestions = configuredQuestions[key] || [];
+            currentIdx = 0;
+            currentScore = 0;
+            currentWrong = [];
+            answerShown = false;
+            if (!currentQuestions.length) { alert('该专业无题目'); return; }
+            showPage('quiz');
+            renderQ();
+        }
+
+        // 4.6 渲染题目
+        function renderQ() {
+            if (currentIdx >= currentQuestions.length) {
+                sessionResults[currentSubjectKey] = {
+                    score: currentScore,
+                    total: currentQuestions.length,
+                    wrong: currentWrong
+                };
+                renderSelectPage();
+                showPage('select');
+                return;
+            }
+
+            const q = currentQuestions[currentIdx];
+            answerShown = false;
+            const d = DB[currentSubjectKey];
+
+            document.getElementById('quiz-subject-name').textContent = d.name;
+            document.getElementById('quiz-progress').textContent = `第 ${currentIdx+1} 题 / 共 ${currentQuestions.length} 题`;
+            const pct = Math.max(4, (currentIdx + 1) / currentQuestions.length * 100);
+            document.getElementById('progress-fill').style.width = pct + '%';
+            const scoreDisplay = currentScore % 1 === 0 ? currentScore : currentScore.toFixed(1);
+            document.getElementById('quiz-score').textContent = scoreDisplay;
+            document.getElementById('q-counter').textContent = `已答 ${currentIdx} 题，还剩 ${currentQuestions.length-currentIdx} 题`;
+            document.getElementById('q-label').textContent = `${d.name} · 第 ${currentIdx+1} 题`;
+
+            const typeMap = { single: '单选题', multi: '多选题', fill: '填空题', judge: '判断题' };
+            const badge = document.getElementById('q-badge');
+            badge.textContent = typeMap[q.type] || '题目';
+            badge.className = 'q-badge' + (q.type === 'multi' ? ' multi' : q.type === 'fill' ? ' fill' : q.type ===
+                'judge' ? ' judge' : '');
+
+            document.getElementById('q-text').textContent = q.q;
+            document.getElementById('options-list').innerHTML = '';
+            document.getElementById('fill-box').style.display = 'none';
+            document.getElementById('action-row').style.display = '';
+            document.getElementById('record-row').style.display = 'none';
+
+            // 随机选项
+            let options = q.opts || [];
+            if (window._quizConfig && window._quizConfig.shuffleOptions) {
+                options = [...options].sort(() => Math.random() - 0.5);
+            }
+
+            if (q.type === 'fill' || q.type === 'judge') {
+                // 填空/判断：手动记录
+            } else if (q.type === 'multi') {
+                const letters = ['A', 'B', 'C', 'D', 'E'];
+                options.forEach((opt, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    const letter = letters[i] || String.fromCharCode(65 + i);
+                    const text = opt.replace(/^[A-Ea-e][.、．）)\s]\s*/, '');
+                    btn.innerHTML = `<span class="opt-label">${letter}</span><span class="opt-text">${text}</span>`;
+                    btn.onclick = () => btn.classList.toggle('selected');
+                    document.getElementById('options-list').appendChild(btn);
+                });
+                document.getElementById('action-row').style.display = 'flex';
+                document.getElementById('record-row').style.display = 'none';
+                const btnShow = document.querySelector('.btn-show');
+                btnShow.textContent = '📝 提交答案';
+                btnShow.onclick = () => submitMultiAnswer(q);
+            } else {
+                const letters = ['A', 'B', 'C', 'D', 'E'];
+                options.forEach((opt, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    const letter = letters[i] || String.fromCharCode(65 + i);
+                    const text = opt.replace(/^[A-Ea-e][.、．）)\s]\s*/, '');
+                    btn.innerHTML = `<span class="opt-label">${letter}</span><span class="opt-text">${text}</span>`;
+                    btn.onclick = () => handleOptionClick(btn, letter, q);
+                    document.getElementById('options-list').appendChild(btn);
+                });
+                document.getElementById('action-row').style.display = 'none';
+                document.getElementById('record-row').style.display = 'none';
+            }
+
+            questionStartTime = Date.now();
+            startTimer();
+        }
+
+        // 4.7 计时器
+        function startTimer() {
+            const config = window._quizConfig || { timeLimit: 30 };
+            timeLeft = config.timeLimit || 30;
+            isTimeUp = false;
+            const timerDisplay = document.getElementById('timer-display');
+            timerDisplay.textContent = timeLeft;
+            timerDisplay.style.color = '#fcd34d';
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                if (timeLeft <= 5) timerDisplay.style.color = '#f87171';
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    if (!answerShown && !isTimeUp) {
+                        isTimeUp = true;
+                        handleTimeout();
+                    }
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        // 4.8 超时处理
+        function handleTimeout() {
+            if (answerShown) return;
+            answerShown = true;
+            stopTimer();
+
+            const q = currentQuestions[currentIdx];
+            const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
+
+            if (q.type === 'fill' || q.type === 'judge') {
+                document.getElementById('fill-box').style.display = 'block';
+                document.getElementById('fill-ans').textContent = q.ans || '（无参考答案）';
+                document.getElementById('action-row').style.display = 'none';
+                document.getElementById('record-row').style.display = 'none';
+            } else {
+                document.querySelectorAll('.option-btn').forEach(btn => {
+                    btn.disabled = true;
+                    const l = btn.querySelector('.opt-label').textContent;
+                    if (q.ans && q.ans.includes(l)) btn.classList.add('correct');
+                });
+            }
+
+            currentWrong.push({ ...q, idx: currentIdx + 1, skipped: false, timeout: true });
+            saveWrongToStorage(currentSubjectKey, q.type, currentWrong);
+
+            answerLog.push({
+                time: new Date().toLocaleString(),
+                subject: DB[currentSubjectKey]?.name || currentSubjectKey,
+                type: q.type,
+                question: q.q,
+                userAnswer: '超时未答',
+                correctAnswer: q.ans || '无',
+                result: '⏰ 超时',
+                timeSpent: elapsed + '秒'
+            });
+
+            document.getElementById('mock-emoji').textContent = '⏰';
+            document.getElementById('mock-text').textContent = '时间到！';
+            document.getElementById('mock-sub').textContent = '超时了，自动进入下一题';
+            showMock(() => { currentIdx++;
+                renderQ(); }, 600);
+        }
+
+        // 4.9 单选题点击
+        function handleOptionClick(clickedBtn, letter, q) {
+            if (answerShown) return;
+            stopTimer();
+            answerShown = true;
+            const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
+
+            document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+
+            const isCorrect = q.ans && q.ans.includes(letter);
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                const l = btn.querySelector('.opt-label').textContent;
+                if (q.ans && q.ans.includes(l)) btn.classList.add('correct');
+            });
+
+            answerLog.push({
+                time: new Date().toLocaleString(),
+                subject: DB[currentSubjectKey]?.name || currentSubjectKey,
+                type: '单选题',
+                question: q.q,
+                userAnswer: letter,
+                correctAnswer: q.ans || '无',
+                result: isCorrect ? '✅ 正确' : '❌ 错误',
+                timeSpent: elapsed + '秒'
+            });
+
+            if (isCorrect) {
+                currentScore++;
+                setTimeout(() => { currentIdx++;
+                    renderQ(); }, 800);
+            } else {
+                clickedBtn.classList.add('wrong');
+                currentWrong.push({ ...q, idx: currentIdx + 1 });
+                saveWrongToStorage(currentSubjectKey, q.type, currentWrong);
+                showMock(() => { currentIdx++;
+                    renderQ(); }, 600);
+            }
+        }
+
+        // 4.10 多选题提交
+        function submitMultiAnswer(q) {
+            if (answerShown) return;
+            stopTimer();
+            answerShown = true;
+            const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
+
+            const selectedButtons = document.querySelectorAll('.option-btn.selected');
+            const selectedLetters = Array.from(selectedButtons).map(btn => btn.querySelector('.opt-label').textContent);
+            const userAnswer = selectedLetters.join('');
+
+            const correctAnswer = q.ans || '';
+            const correctLetters = correctAnswer.split('');
+
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                const l = btn.querySelector('.opt-label').textContent;
+                if (correctLetters.includes(l)) btn.classList.add('correct');
+            });
+            document.querySelectorAll('.option-btn.selected').forEach(btn => {
+                const l = btn.querySelector('.opt-label').textContent;
+                if (!correctLetters.includes(l)) btn.classList.add('wrong');
+            });
+            document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+
+            let score = 0,
+                hasWrong = false,
+                correctSelected = 0;
+            for (let l of selectedLetters) {
+                if (!correctLetters.includes(l)) { hasWrong = true; break; }
+            }
+            if (!hasWrong) {
+                for (let l of selectedLetters) {
+                    if (correctLetters.includes(l)) correctSelected++;
+                }
+                score = correctSelected * 0.5;
+                if (score > 1) score = 1;
+            }
+
+            currentScore += score;
+            const resultText = score > 0 ? (score === 1 ? '✅ 完全正确' : '✅ 部分正确') : '❌ 错误';
+            answerLog.push({
+                time: new Date().toLocaleString(),
+                subject: DB[currentSubjectKey]?.name || currentSubjectKey,
+                type: '多选题',
+                question: q.q,
+                userAnswer: userAnswer || '未选',
+                correctAnswer: correctAnswer,
+                result: resultText + (score > 0 ? ` (+${score}分)` : ''),
+                timeSpent: elapsed + '秒'
+            });
+
+            if (score > 0) {
+                setTimeout(() => { currentIdx++;
+                    renderQ(); }, 800);
+            } else if (selectedLetters.length === 0) {
+                currentWrong.push({ ...q, idx: currentIdx + 1, skipped: true });
+                saveWrongToStorage(currentSubjectKey, q.type, currentWrong);
+                showMock(() => { currentIdx++;
+                    renderQ(); }, 600);
+            } else {
+                currentWrong.push({ ...q, idx: currentIdx + 1 });
+                saveWrongToStorage(currentSubjectKey, q.type, currentWrong);
+                showMock(() => { currentIdx++;
+                    renderQ(); }, 600);
+            }
+        }
+
+        // 4.11 显示答案（填空/判断）
+        function showAnswer() {
+            if (answerShown) return;
+            answerShown = true;
+            stopTimer();
+            const q = currentQuestions[currentIdx];
+            document.getElementById('fill-box').style.display = 'block';
+            document.getElementById('fill-ans').textContent = q.ans || '（无参考答案）';
+            document.getElementById('action-row').style.display = 'none';
+            document.getElementById('record-row').style.display = 'flex';
+        }
+
+        // 4.12 记录结果（填空/判断）
+        function recordResult(isCorrect) {
+            stopTimer();
+            const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
+            const q = currentQuestions[currentIdx];
+
+            answerLog.push({
+                time: new Date().toLocaleString(),
+                subject: DB[currentSubjectKey]?.name || currentSubjectKey,
+                type: q.type === 'judge' ? '判断题' : '填空题',
+                question: q.q,
+                userAnswer: isCorrect ? '答对' : '答错',
+                correctAnswer: q.ans || '无',
+                result: isCorrect ? '✅ 正确' : '❌ 错误',
+                timeSpent: elapsed + '秒'
+            });
+
+            if (isCorrect) {
+                currentScore++;
+                currentIdx++;
+                renderQ();
+            } else {
+                currentWrong.push({ ...q, idx: currentIdx + 1 });
+                saveWrongToStorage(currentSubjectKey, q.type, currentWrong);
+                showMock(() => { currentIdx++;
+                    renderQ(); }, 600);
+            }
+        }
+
+        // 4.13 跳过
+        function skipQ() {
+            stopTimer();
+            const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
+            const q = currentQuestions[currentIdx];
+
+            answerLog.push({
+                time: new Date().toLocaleString(),
+                subject: DB[currentSubjectKey]?.name || currentSubjectKey,
+                type: q.type,
+                question: q.q,
+                userAnswer: '跳过',
+                correctAnswer: q.ans || '无',
+                result: '⏭️ 跳过',
+                timeSpent: elapsed + '秒'
+            });
+
+            currentWrong.push({ ...q, idx: currentIdx + 1, skipped: true });
+            saveWrongToStorage(currentSubjectKey, q.type, currentWrong);
+            currentIdx++;
+            renderQ();
+        }
+
+        // 4.14 提前交卷
+        function confirmFinishQuiz() {
+            if (currentQuestions.length === 0) return;
+            const total = currentQuestions.length;
+            const done = currentIdx;
+            const remaining = total - done;
+            if (remaining === 0) {
+                alert('所有题目已完成，无需提前交卷');
+                return;
+            }
+            if (confirm(
+                    `确定要提前交卷吗？\n\n当前进度：已完成 ${done} 题 / 共 ${total} 题\n剩余 ${remaining} 题，交卷后不可继续答题。`
+                    )) {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            stopTimer();
+            sessionResults[currentSubjectKey] = {
+                score: currentScore,
+                total: currentQuestions.length,
+                wrong: currentWrong
+            };
+            showFinalResult();
+        }
+
+        // 4.15 嘲讽弹窗
+        function showMock(callback, duration) {
+            duration = duration || 600;
+            const pick = MOCK_LIST[Math.floor(Math.random() * MOCK_LIST.length)];
+            document.getElementById('mock-emoji').textContent = pick[0];
+            document.getElementById('mock-text').textContent = pick[1];
+            document.getElementById('mock-sub').textContent = pick[2];
+
+            const overlay = document.getElementById('mock-overlay');
+            const box = document.getElementById('mock-box');
+            const bar = document.getElementById('mock-bar');
+
+            overlay.style.display = 'flex';
+            box.style.opacity = '0';
+            box.style.transform = 'scale(.8)';
+            box.classList.remove('show');
+
+            setTimeout(() => {
+                box.classList.add('show');
+                box.style.opacity = '1';
+                box.style.transform = 'scale(1)';
+                bar.style.width = '0%';
+                setTimeout(() => { bar.style.width = '100%'; }, 50);
+            }, 20);
+
+            mockTimer = setTimeout(() => {
+                overlay.style.display = 'none';
+                box.classList.remove('show');
+                bar.style.width = '0%';
+                callback();
+            }, duration);
+
+            overlay.onclick = () => {
+                clearTimeout(mockTimer);
+                overlay.style.display = 'none';
+                box.classList.remove('show');
+                bar.style.width = '0%';
+                callback();
+            };
+        }
+
+        // 4.16 错题保存
+        function saveWrongToStorage(subjectKey, type, wrongList) {
+            const key = `wrong_${subjectKey}_${type}`;
+            const unique = [];
+            const idSet = new Set();
+            if (!wrongList || wrongList.length === 0) {
+                localStorage.setItem(key, JSON.stringify([]));
+                return;
+            }
+            wrongList.forEach(w => {
+                const id = w._id || w.id || w.q;
+                if (!idSet.has(id)) {
+                    idSet.add(id);
+                    unique.push(w);
+                }
+            });
+            localStorage.setItem(key, JSON.stringify(unique));
+        }
+
+        // 4.17 汇总结果
+        function showFinalResult() {
+            let totalQ = 0,
+                totalCorrect = 0,
+                allWrong = [];
+            const subCards = document.getElementById('subject-results');
+            subCards.innerHTML = '';
+
+            SUBJECTS.forEach(sub => {
+                const d = DB[sub.key];
+                const c = COLORS[sub.key];
+                const r = sessionResults[sub.key];
+                const total = r ? r.total : 0;
+                const score = r ? r.score : 0;
+                const pct = total > 0 ? Math.round(score / total * 100) : 0;
+                totalQ += total;
+                totalCorrect += score;
+                if (r) allWrong.push(...r.wrong.map(w => ({ ...w, subjectName: d.name })));
+
+                const pctColor = pct >= 80 ? '#16a34a' : pct >= 60 ? '#d97706' : '#dc2626';
+                const card = document.createElement('div');
+                card.className = 'sr-card';
+                card.style.setProperty('--c-accent', c.accent);
+                card.innerHTML = `
+              <div class="sr-icon">${d.icon}</div>
+              <div class="sr-name">${d.name}</div>
+              <div class="sr-pct" style="color:${pctColor}">${r ? pct+'%' : '—'}</div>
+              <div class="sr-detail">${r ? score+'/'+total+' 题' : '未答题'}</div>
+            `;
+                subCards.appendChild(card);
+            });
+
+            const totalPct = totalQ > 0 ? Math.round(totalCorrect / totalQ * 100) : 0;
+            document.getElementById('r-total-pct').textContent = totalPct + '%';
+            document.getElementById('r-total').textContent = totalQ;
+            const correctDisplay = totalCorrect % 1 === 0 ? totalCorrect : totalCorrect.toFixed(1);
+            document.getElementById('r-correct').textContent = correctDisplay;
+            document.getElementById('r-wrong').textContent = totalQ - totalCorrect;
+
+            const wrongList = document.getElementById('wrong-list');
+            if (!allWrong.length) {
+                wrongList.innerHTML =
+                    `<div class="no-wrong"><div class="nw-icon">🎉</div><div class="nw-text">全部答对，没有错题！</div></div>`;
+            } else {
+                wrongList.innerHTML = '';
+                allWrong.forEach(q => {
+                    const item = document.createElement('div');
+                    item.className = 'wrong-item';
+                    item.innerHTML = `
+                <div class="wi-top">
+                  <span class="wi-tag ${q.skipped?'wi-skip':''}">${q.skipped?'跳过':'答错'}</span>
+                  <span class="wi-sub">第${q.idx}题 · ${q.subjectName}</span>
+                </div>
+                <div class="wi-q">${q.q}</div>
+                <div class="wi-ans-label">参考答案</div>
+                <div class="wi-ans">${q.ans||'（无答案）'}</div>
+              `;
+                    wrongList.appendChild(item);
+                });
+            }
+
+            const logBody = document.getElementById('log-body');
+            logBody.innerHTML = '';
+            if (answerLog.length === 0) {
+                logBody.innerHTML =
+                    '<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--sub);">暂无答题记录</td></tr>';
+            } else {
+                answerLog.forEach(entry => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid var(--border)';
+                    tr.innerHTML = `
+                <td style="padding:8px 10px;white-space:nowrap;">${entry.time}</td>
+                <td style="padding:8px 10px;">${entry.subject}</td>
+                <td style="padding:8px 10px;">${entry.type}</td>
+                <td style="padding:8px 10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${entry.question}">${entry.question}</td>
+                <td style="padding:8px 10px;">${entry.userAnswer}</td>
+                <td style="padding:8px 10px;">${entry.correctAnswer}</td>
+                <td style="padding:8px 10px;">${entry.result}</td>
+                <td style="padding:8px 10px;">${entry.timeSpent}</td>
+              `;
+                    logBody.appendChild(tr);
+                });
+            }
+
+            showPage('result');
+        }
+
+        // 4.18 工具函数
+        function scrollToWrong() {
+            document.getElementById('wrong-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function backToConfig() {
+            showPage('config');
+        }
+
+        function exportLog() {
+            if (answerLog.length === 0) {
+                alert('暂无答题记录可导出');
+                return;
+            }
+            const headers = ['时间', '专业', '题型', '题目', '你的答案', '正确答案', '结果', '用时'];
+            const rows = answerLog.map(e => [
+                e.time, e.subject, e.type, e.question, e.userAnswer, e.correctAnswer, e.result, e.timeSpent
+            ]);
+            const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `答题日志_${new Date().toLocaleString().replace(/[/:]/g,'-')}.csv`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function showPage(name) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + name).classList.add('active');
+
+            const order = ['step1', 'step2', 'step3', 'step4'];
+            const steps = { config: 0, select: 1, quiz: 2, result: 3 };
+            const curIdx = steps[name] ?? 0;
+            order.forEach((s, i) => {
+                const el = document.getElementById(s);
+                if (!el) return;
+                el.classList.remove('active', 'done');
+                if (i < curIdx) el.classList.add('done');
+                else if (i === curIdx) el.classList.add('active');
+            });
+
+            if (name === 'select') {
+                renderSelectPage();
+            } else if (name === 'quiz') {
+                if (currentQuestions.length > 0 && currentIdx < currentQuestions.length) {
+                    renderQ();
+                } else {
+                    document.getElementById('q-text').textContent = '请先到"选择专业"页点击开始答题';
+                    document.getElementById('options-list').innerHTML = '';
+                    document.getElementById('quiz-progress').textContent = '未开始';
+                }
+            } else if (name === 'result') {
+                const anyDone = SUBJECTS.some(s => sessionResults[s.key]);
+                if (anyDone) {
+                    showFinalResult();
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════
+        // 5. 启动
+        // ═══════════════════════════════════════════════════════
+        renderConfig();
+        restoreNightMode();
+    </script>
+</body>
+</html>
