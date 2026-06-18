@@ -3034,98 +3034,138 @@
         // 必答题配置渲染
         // ════════════════════════════════════════════════════════════════
         function renderConfig() {
-            const grid = document.getElementById('config-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            SUBJECTS.forEach(sub => {
-                const d = DB[sub.key] || {};
-                const c = COLORS[sub.key] || {};
-                const maxMap = { single: d.single?.length || 0, multi: d.multi?.length || 0, fill: d.fill?.length || 0,
-                    judge: d.judge?.length || 0, short: d.short?.length || 0 };
-                const total = Object.values(maxMap).reduce((a, b) => a + b, 0);
-                const typeOpts = sub.types.map(t => `<option value="${t.v}">${t.l}</option>`).join('');
-                const firstType = sub.types[0].v;
-                const firstMax = maxMap[firstType] || 10;
-                const card = document.createElement('div');
-                card.className = 'config-card';
-                card.style.setProperty('--c-accent', c.accent || '#ccc');
-                card.innerHTML = `
-                    <div class="cc-head">
-                        <div class="cc-icon" style="background:${c.iconBg||'#eee'};color:${c.iconColor||'#333'}">${d.icon||'📄'}</div>
-                        <div><div class="cc-name">${d.name||sub.key}</div><div class="cc-total">共 ${total} 题</div></div>
-                    </div>
-                    <div class="field"><label>题　型</label>
-                        <select id="type_${sub.key}" onchange="cfgUpdateRange('${sub.key}')">${typeOpts}</select>
-                    </div>
-                    <div class="field-row2">
-                        <div class="field"><label>起始</label><input type="number" id="from_${sub.key}" value="1" min="1"></div>
-                        <div class="field"><label>结束</label><input type="number" id="to_${sub.key}" value="${firstMax}" min="1"></div>
-                    </div>
-                    <div class="field"><label>抽题数量</label><input type="number" id="count_${sub.key}" value="${Math.min(10,firstMax)}" min="0"></div>
-                `;
-                grid.appendChild(card);
-            });
-        }
+    const grid = document.getElementById('config-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    SUBJECTS.forEach(sub => {
+        const d = DB[sub.key] || {};
+        const c = COLORS[sub.key] || {};
+        // 各题型题数
+        const maxMap = {
+            single: d.single?.length || 0,
+            multi: d.multi?.length || 0,
+            fill: d.fill?.length || 0,
+            judge: d.judge?.length || 0,
+            short: d.short?.length || 0
+        };
+        const total = Object.values(maxMap).reduce((a, b) => a + b, 0);
+        // 生成题型选项：先“全部题型”，后各题型
+        let typeOpts = `<option value="all">全部题型（${total}题）</option>`;
+        sub.types.forEach(t => {
+            const count = maxMap[t.v] || 0;
+            typeOpts += `<option value="${t.v}">${t.l}${count > 0 ? `（${count}题）` : ''}</option>`;
+        });
+        const firstType = sub.types[0]?.v || 'single';
+        const firstMax = maxMap[firstType] || 10;
+        const card = document.createElement('div');
+        card.className = 'config-card';
+        card.style.setProperty('--c-accent', c.accent || '#ccc');
+        card.innerHTML = `
+            <div class="cc-head">
+                <div class="cc-icon" style="background:${c.iconBg||'#eee'};color:${c.iconColor||'#333'}">${d.icon||'📄'}</div>
+                <div><div class="cc-name">${d.name||sub.key}</div><div class="cc-total">共 ${total} 题</div></div>
+            </div>
+            <div class="field"><label>题　型</label>
+                <select id="type_${sub.key}" onchange="cfgUpdateRange('${sub.key}')">${typeOpts}</select>
+            </div>
+            <div class="field-row2">
+                <div class="field"><label>起始</label><input type="number" id="from_${sub.key}" value="1" min="1"></div>
+                <div class="field"><label>结束</label><input type="number" id="to_${sub.key}" value="${firstMax}" min="1"></div>
+            </div>
+            <div class="field"><label>抽题数量</label><input type="number" id="count_${sub.key}" value="${Math.min(10, firstMax)}" min="0"></div>
+        `;
+        grid.appendChild(card);
+    });
+}
 
         function cfgUpdateRange(key) {
-            const type = document.getElementById('type_' + key).value;
-            const d = DB[key] || {};
-            const maxMap = { single: d.single?.length || 0, multi: d.multi?.length || 0, fill: d.fill?.length || 0,
-                judge: d.judge?.length || 0, short: d.short?.length || 0 };
-            const max = maxMap[type] || 10;
-            document.getElementById('to_' + key).value = max;
-            document.getElementById('count_' + key).value = Math.min(10, max);
-        }
+    const type = document.getElementById('type_' + key).value;
+    const d = DB[key] || {};
+    const maxMap = {
+        single: d.single?.length || 0,
+        multi: d.multi?.length || 0,
+        fill: d.fill?.length || 0,
+        judge: d.judge?.length || 0,
+        short: d.short?.length || 0
+    };
+    let max;
+    if (type === 'all') {
+        max = Object.values(maxMap).reduce((a, b) => a + b, 0);
+    } else {
+        max = maxMap[type] || 10;
+    }
+    document.getElementById('to_' + key).value = max;
+    document.getElementById('count_' + key).value = Math.min(10, max);
+}
 
         // ════════════════════════════════════════════════════════════════
         // 必答题流程
         // ════════════════════════════════════════════════════════════════
         function goToSelect() {
-            const timeLimit = parseInt(document.getElementById('timeLimit').value) || 20;
-            const enableDedup = document.getElementById('enableDedup').checked;
-            const practiceMode = document.getElementById('practiceMode').value;
-            const shuffleOptions = document.getElementById('shuffleOptions').checked;
-            window._quizConfig = { timeLimit, enableDedup, practiceMode, shuffleOptions };
-            window._questionHistory = window._questionHistory || {};
+    const timeLimit = parseInt(document.getElementById('timeLimit').value) || 20;
+    const enableDedup = document.getElementById('enableDedup').checked;
+    const practiceMode = document.getElementById('practiceMode').value;
+    const shuffleOptions = document.getElementById('shuffleOptions').checked;
+    window._quizConfig = { timeLimit, enableDedup, practiceMode, shuffleOptions };
+    window._questionHistory = window._questionHistory || {};
 
-            configuredQuestions = {};
-            sessionResults = {};
-            answerLog = [];
+    configuredQuestions = {};
+    sessionResults = {};
+    answerLog = [];
 
-            SUBJECTS.forEach(sub => {
-                const type = document.getElementById('type_' + sub.key).value;
-                const from = parseInt(document.getElementById('from_' + sub.key).value) - 1;
-                const to = parseInt(document.getElementById('to_' + sub.key).value);
-                const cnt = parseInt(document.getElementById('count_' + sub.key).value);
-                if (cnt === 0) { configuredQuestions[sub.key] = []; return; }
-                const pool = (DB[sub.key] && DB[sub.key][type]) ? DB[sub.key][type].slice(from, to) : [];
-                const poolWithId = pool.map((q, i) => ({ ...q, type, _id: `${sub.key}_${type}_${from + i}` }));
+    SUBJECTS.forEach(sub => {
+        const type = document.getElementById('type_' + sub.key).value;
+        const from = parseInt(document.getElementById('from_' + sub.key).value) - 1;
+        const to = parseInt(document.getElementById('to_' + sub.key).value);
+        const cnt = parseInt(document.getElementById('count_' + sub.key).value);
+        if (cnt === 0) { configuredQuestions[sub.key] = []; return; }
 
-                let picked;
-                if (practiceMode === 'wrong') {
-                    const wrongIds = JSON.parse(localStorage.getItem('wrongIds_' + sub.key) || '[]');
-                    const wrongPool = poolWithId.filter(q => wrongIds.includes(q._id));
-                    picked = wrongPool.length ? wrongPool.sort(() => Math.random() - .5).slice(0, Math.min(cnt, wrongPool
-                        .length)) : poolWithId.sort(() => Math.random() - .5).slice(0, Math.min(cnt, poolWithId
-                        .length));
-                } else if (enableDedup) {
-                    if (!window._questionHistory[sub.key]) window._questionHistory[sub.key] = [];
-                    const history = window._questionHistory[sub.key];
-                    const unseen = poolWithId.filter(q => !history.includes(q._id));
-                    const seen = poolWithId.filter(q => history.includes(q._id));
-                    const fromUnseen = unseen.sort(() => Math.random() - .5).slice(0, Math.min(cnt, unseen.length));
-                    const need = cnt - fromUnseen.length;
-                    const fromSeen = need > 0 ? seen.sort(() => Math.random() - .5).slice(0, need) : [];
-                    picked = [...fromUnseen, ...fromSeen];
-                } else {
-                    picked = poolWithId.sort(() => Math.random() - .5).slice(0, Math.min(cnt, poolWithId.length));
+        // ---- 构建题库池（支持“全部题型”） ----
+        let pool = [];
+        if (type === 'all') {
+            // 从所有题型中合并
+            const allTypes = ['single', 'multi', 'fill', 'judge', 'short'];
+            allTypes.forEach(t => {
+                if (DB[sub.key] && DB[sub.key][t]) {
+                    DB[sub.key][t].forEach((q, idx) => {
+                        pool.push({ ...q, type: t, _id: `${sub.key}_${t}_${idx}` });
+                    });
                 }
-                configuredQuestions[sub.key] = picked;
             });
-
-            renderSelectPage();
-            showPage('select');
+        } else {
+            // 单一题型
+            pool = (DB[sub.key] && DB[sub.key][type]) ? DB[sub.key][type].slice(from, to) : [];
         }
+
+        // 统一生成带_id的池（如果已有_id则保留）
+        const poolWithId = pool.map((q, idx) => ({ ...q, _id: q._id || `${sub.key}_${type}_${from + idx}` }));
+
+        // ---- 根据练习模式和去重策略抽题 ----
+        let picked;
+        if (practiceMode === 'wrong') {
+            const wrongIds = JSON.parse(localStorage.getItem('wrongIds_' + sub.key) || '[]');
+            const wrongPool = poolWithId.filter(q => wrongIds.includes(q._id));
+            picked = wrongPool.length ? wrongPool.sort(() => Math.random() - .5).slice(0, Math.min(cnt, wrongPool.length)) :
+                                      poolWithId.sort(() => Math.random() - .5).slice(0, Math.min(cnt, poolWithId.length));
+        } else if (enableDedup) {
+            if (!window._questionHistory[sub.key]) window._questionHistory[sub.key] = [];
+            const history = window._questionHistory[sub.key];
+            const unseen = poolWithId.filter(q => !history.includes(q._id));
+            const seen = poolWithId.filter(q => history.includes(q._id));
+            const fromUnseen = unseen.sort(() => Math.random() - .5).slice(0, Math.min(cnt, unseen.length));
+            const need = cnt - fromUnseen.length;
+            const fromSeen = need > 0 ? seen.sort(() => Math.random() - .5).slice(0, need) : [];
+            picked = [...fromUnseen, ...fromSeen];
+        } else {
+            picked = poolWithId.sort(() => Math.random() - .5).slice(0, Math.min(cnt, poolWithId.length));
+        }
+
+        configuredQuestions[sub.key] = picked;
+    });
+
+    renderSelectPage();
+    showPage('select');
+}
 
         function renderSelectPage() {
             const summary = document.getElementById('score-summary');
