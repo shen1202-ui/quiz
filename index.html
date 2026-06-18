@@ -1453,52 +1453,63 @@
     </div>
 
     <!-- ④ 必答题答题页 -->
+    <!-- ④ 必答题答题页 -->
+    <!-- ④ 必答题答题页 -->
     <div class="page" id="page-quiz">
-        <div class="quiz-header">
-            <div class="qh-row">
-                <div>
-                    <div class="quiz-label" id="quiz-subject-name">工程管理</div>
-                    <div class="quiz-progress" id="quiz-progress">第 1 题 / 共 10 题</div>
+    <div class="quiz-header">
+        <div class="qh-row">
+            <div>
+                <div class="quiz-label" id="quiz-subject-name">工程管理</div>
+                <div class="quiz-progress" id="quiz-progress">第 1 题 / 共 10 题</div>
+            </div>
+            <div style="text-align:right">
+                <div class="quiz-label">当前得分</div>
+                <div class="quiz-score-num" id="quiz-score">0</div>
+                <div class="timer-wrap">
+                    <span class="timer-label">⏱ </span>
+                    <span class="timer-display" id="timer-display">20</span>
+                    <span class="timer-label">秒</span>
                 </div>
-                <div style="text-align:right">
-                    <div class="quiz-label">当前得分</div>
-                    <div class="quiz-score-num" id="quiz-score">0</div>
-                    <div class="timer-wrap">
-                        <span class="timer-label">⏱ </span>
-                        <span class="timer-display" id="timer-display">20</span>
-                        <span class="timer-label">秒</span>
-                    </div>
-                </div>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:4%"></div></div>
-        </div>
-        <div class="question-card">
-            <div class="q-meta">
-                <div class="q-badge" id="q-badge">单选题</div>
-                <div class="q-label" id="q-label"></div>
-            </div>
-            <div class="q-text" id="q-text">题目加载中...</div>
-            <div class="options-list" id="options-list"></div>
-            <div class="fill-box" id="fill-box">
-                <div class="fill-box-label">✓ 参考答案</div>
-                <div class="fill-box-ans" id="fill-ans"></div>
             </div>
         </div>
-        <div class="action-row" id="action-row">
-            <button class="action-btn btn-show" onclick="showAnswer()">👁 &nbsp;显示答案</button>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:4%"></div></div>
+    </div>
+
+    <div class="question-card" style="position:relative;">
+        <!-- 题号导航（横向，置于题目上方） -->
+        <div id="question-nav" style="display:flex; flex-wrap:nowrap; overflow-x:auto; gap:6px; padding:6px 0 12px 0; margin-bottom:8px; border-bottom:1px solid var(--border);">
+            <!-- 由 JS 生成 -->
         </div>
-        <div class="action-row" id="record-row" style="display:none">
-            <button class="action-btn btn-correct" onclick="recordResult(true)">✓ &nbsp;答对了</button>
-            <button class="action-btn btn-wrong" onclick="recordResult(false)">✗ &nbsp;答错了</button>
+
+        <div class="q-meta">
+            <div class="q-badge" id="q-badge">单选题</div>
+            <div class="q-label" id="q-label"></div>
         </div>
-        <div class="nav-row">
-            <div class="q-counter" id="q-counter"></div>
-            <div style="display:flex;gap:12px;">
-                  <button class="skip-btn" onclick="confirmFinishQuiz()" style="border-color:#dc2626;color:#dc2626;">📝 提前交卷</button>
-                  <button class="skip-btn" onclick="skipQ()">跳过 →</button>
-            </div>
+        <div class="q-text" id="q-text">题目加载中...</div>
+        <div class="options-list" id="options-list"></div>
+        <div class="fill-box" id="fill-box">
+            <div class="fill-box-label">✓ 参考答案</div>
+            <div class="fill-box-ans" id="fill-ans"></div>
         </div>
     </div>
+
+    <div class="action-row" id="action-row">
+        <button class="action-btn btn-show" onclick="showAnswer()">👁 &nbsp;显示答案</button>
+    </div>
+    <div class="action-row" id="record-row" style="display:none">
+        <button class="action-btn btn-correct" onclick="recordResult(true)">✓ &nbsp;答对了</button>
+        <button class="action-btn btn-wrong" onclick="recordResult(false)">✗ &nbsp;答错了</button>
+    </div>
+
+    <div class="nav-row">
+        <div class="q-counter" id="q-counter"></div>
+        <div style="display:flex;gap:12px;">
+            <button class="skip-btn" onclick="confirmFinishQuiz()" style="border-color:#dc2626;color:#dc2626;">📝 提前交卷</button>
+            <button class="skip-btn" onclick="skipQ()">跳过 →</button>
+            <button class="skip-btn" id="continue-btn" style="display:none;border-color:var(--green);color:var(--green);" onclick="exitReviewMode()">▶ 继续答题</button>
+        </div>
+    </div>
+</div>
 
     <!-- ⑤ 必答题汇总结果页 -->
     <!-- ⑤ 必答题汇总结果页 -->
@@ -2912,6 +2923,10 @@
         // ════════════════════════════════════════════════════════════════
         // 全局状态
         // ════════════════════════════════════════════════════════════════
+        // 题号导航相关
+        let questionStatus = [];          // 每道题的状态 { answered, userAnswer, isCorrect, skipped, timeout }
+        let isReviewMode = false;         // 是否在回看模式
+        let reviewIndex = -1;             // 回看的是第几题
         let configuredQuestions = {},
             sessionResults = {},
             answerLog = [];
@@ -2950,71 +2965,55 @@
         // 页面切换
         // ════════════════════════════════════════════════════════════════
         function showPage(name) {
-            // 隐藏所有页面
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            const target = document.getElementById('page-' + name);
-            if (target) target.classList.add('active');
+    // 1. 隐藏所有页面，显示目标页面
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('page-' + name);
+    if (target) target.classList.add('active');
 
-            // 更新步骤条
-            const order = ['step1', 'step2', 'step3', 'step4'];
-            let curIdx = 0;
-            if (name === 'config') curIdx = 0;
-            else if (['required-config', 'rush-config', 'risk-config', 'select'].includes(name)) curIdx = 1;
-            else if (['quiz', 'rush-quiz', 'risk-quiz'].includes(name)) curIdx = 2;
-            else if (['result', 'rush-result', 'risk-result', 'rush-log'].includes(name)) curIdx = 3;
-            order.forEach((s, i) => {
-                const el = document.getElementById(s);
-                if (!el) return;
-                el.classList.remove('active', 'done');
-                if (i < curIdx) el.classList.add('done');
-                else if (i === curIdx) el.classList.add('active');
-            });
-            if (name === 'result') {
-                // 检查是否有必答题数据，如果有则显示
-                const hasData = SUBJECTS.some(s => sessionResults[s.key]);
-                if (hasData) {
-                    showFinalResult();
-                } else {
-                     // 如果没有数据，可以显示提示或空状态
-                    document.getElementById('r-total-pct').textContent = '—';
-                    document.getElementById('r-total').textContent = '0';
-                    document.getElementById('r-correct').textContent = '0';
-                    document.getElementById('r-wrong').textContent = '0';
-                    const container = document.getElementById('wrong-required');
-                    if (container) container.innerHTML = `<div class="no-wrong"><div class="nw-icon">📭</div><div class="nw-text">暂无答题数据</div></div>`;
-                    const logBody = document.getElementById('log-body');
-                    if (logBody) logBody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--sub);">暂无记录</td></tr>';
-                }
-            }
-            if (name === 'rush-quiz') {
-                   // 先显示页面
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                const target = document.getElementById('page-rush-quiz');
-                if (target) target.classList.add('active');
-              // 然后渲染
-                if (!rushQuestions || rushQuestions.length === 0) {
-                    alert('请先配置抢答题');
-                    showPage('rush-config');
-                    return;
-                }
-                if (rushIdx >= rushQuestions.length) {
-                    showRushResult();
-                    return;
-                }
-                renderRushQ();
-                return; // 避免重复执行
-            }
-            // 如果进入必答题配置页，确保配置卡片渲染
-            if (name === 'required-config') {
-                renderConfig();
-            }
-            // 控制吉祥物显示（仅主菜单和汇总结果页）
-            const mascot = document.getElementById('mascot');
-            if (mascot) {
-                const showPages = ['config', 'result', 'rush-result', 'risk-result'];
-                mascot.style.display = showPages.includes(name) ? 'block' : 'none';
-            }
+    // 2. 更新步骤条
+    const order = ['step1', 'step2', 'step3', 'step4'];
+    let curIdx = 0;
+    if (name === 'config') curIdx = 0;
+    else if (['required-config', 'rush-config', 'risk-config', 'select'].includes(name)) curIdx = 1;
+    else if (['quiz', 'rush-quiz', 'risk-quiz'].includes(name)) curIdx = 2;
+    else if (['result', 'rush-result', 'risk-result', 'rush-log'].includes(name)) curIdx = 3;
+    order.forEach((s, i) => {
+        const el = document.getElementById(s);
+        if (!el) return;
+        el.classList.remove('active', 'done');
+        if (i < curIdx) el.classList.add('done');
+        else if (i === curIdx) el.classList.add('active');
+    });
+
+    // 3. 特殊页面处理（按优先级）
+    if (name === 'result') {
+        // 显示页面已处理，直接渲染数据
+        showFinalResult();
+        return; // 防止继续执行
+    }
+
+    if (name === 'rush-quiz') {
+        // 先确保页面显示（已处理），然后检查数据
+        if (!rushQuestions || rushQuestions.length === 0) {
+            alert('请先配置抢答题');
+            showPage('rush-config');
+            return;
         }
+        if (rushIdx >= rushQuestions.length) {
+            showRushResult();
+            return;
+        }
+        renderRushQ();
+        return;
+    }
+
+    if (name === 'required-config') {
+        renderConfig();
+        return;
+    }
+
+    // 其他页面无需特殊处理（如 config, select, risk-config 等）
+}
 
         // ════════════════════════════════════════════════════════════════
         // 夜间模式
@@ -3204,16 +3203,24 @@
         }
 
         function startSubjectQuiz(key) {
-            currentSubjectKey = key;
-            currentQuestions = configuredQuestions[key] || [];
-            currentIdx = 0;
-            currentScore = 0;
-            currentWrong = [];
-            answerShown = false;
-            if (!currentQuestions.length) { alert('该专业无题目'); return; }
-            showPage('quiz');
-            renderQ();
-        }
+    currentSubjectKey = key;
+    currentQuestions = configuredQuestions[key] || [];
+    currentIdx = 0;
+    currentScore = 0;
+    currentWrong = [];
+    answerShown = false;
+    // 初始化题号状态
+    questionStatus = currentQuestions.map(() => ({
+        answered: false,
+        userAnswer: null,
+        isCorrect: false,
+        skipped: false,
+        timeout: false
+    }));
+    if (!currentQuestions.length) { alert('该专业无题目'); return; }
+    showPage('quiz');
+    renderQ();
+}
 
         function renderQ() {
     if (currentIdx >= currentQuestions.length) {
@@ -3257,27 +3264,34 @@
     const cfg = window._quizConfig || {};
     if (cfg.shuffleOptions && options.length > 1) options = [...options].sort(() => Math.random() - .5);
 
-    // ----- 判断题分支 -----
-    if (q.type === 'judge') {
-        const judgeOpts = ['正确', '错误'];
-        const letters = ['A', 'B'];
+    // ========== 根据题型渲染 ==========
+    if (q.type === 'fill' || q.type === 'short') {
+        // 填空/简答：显示“显示答案”按钮
+        document.getElementById('action-row').style.display = 'flex';
+        document.getElementById('record-row').style.display = 'none';
+        const btnShow = document.querySelector('.btn-show');
+        if (btnShow) {
+            btnShow.textContent = '👁 显示答案';
+            btnShow.onclick = showAnswer;
+        }
+    } else if (q.type === 'judge') {
+        // 判断题：显示“正确”和“错误”两个选项
+        const judgeOpts = [
+            { letter: 'A', text: '正确' },
+            { letter: 'B', text: '错误' }
+        ];
         const container = document.getElementById('options-list');
-        judgeOpts.forEach((text, idx) => {
+        judgeOpts.forEach(opt => {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
-            btn.innerHTML = `<span class="opt-label">${letters[idx]}</span><span class="opt-text">${text}</span>`;
-            btn.onclick = () => handleJudgeClick(btn, text, q);
+            btn.innerHTML = `<span class="opt-label">${opt.letter}</span><span class="opt-text">${opt.text}</span>`;
+            btn.onclick = () => handleJudgeClick(btn, opt.text, q);
             container.appendChild(btn);
         });
         document.getElementById('action-row').style.display = 'none';
         document.getElementById('record-row').style.display = 'none';
-    }
-    // ----- 填空/简答分支 -----
-    else if (q.type === 'fill' || q.type === 'short') {
-        // 保持显示答案按钮，不做修改
-    }
-    // ----- 多选题分支 -----
-    else if (q.type === 'multi') {
+    } else if (q.type === 'multi') {
+        // 多选题
         const letters = ['A', 'B', 'C', 'D', 'E'];
         options.forEach((opt, i) => {
             const btn = document.createElement('button');
@@ -3289,10 +3303,12 @@
             btn.onclick = () => btn.classList.toggle('selected');
             document.getElementById('options-list').appendChild(btn);
         });
-        document.getElementById('action-row').innerHTML = `<button class="action-btn btn-show" onclick="submitMultiAnswer()">✓ 提交答案</button>`;
-    }
-    // ----- 单选题分支 -----
-    else {
+        document.getElementById('action-row').innerHTML =
+            `<button class="action-btn btn-show" onclick="submitMultiAnswer()">✓ 提交答案</button>`;
+        document.getElementById('action-row').style.display = 'flex';
+        document.getElementById('record-row').style.display = 'none';
+    } else {
+        // 单选题
         const letters = ['A', 'B', 'C', 'D', 'E'];
         options.forEach((opt, i) => {
             const btn = document.createElement('button');
@@ -3307,8 +3323,142 @@
         document.getElementById('record-row').style.display = 'none';
     }
 
+    // ===== 渲染题号导航 =====
+    renderQuestionNav();
+
     questionStartTime = Date.now();
     startTimer();
+}
+
+        // ===== 题号导航相关函数 =====
+        function renderQuestionNav() {
+    const nav = document.getElementById('question-nav');
+    if (!nav) return;
+    nav.innerHTML = '';
+    const total = currentQuestions.length;
+    for (let i = 0; i < total; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i + 1;
+        btn.style.cssText = `
+            width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border);
+            font-size: 12px; font-weight: 700; cursor: pointer;
+            background: var(--bg); color: var(--text);
+            transition: all .2s;
+        `;
+        const status = questionStatus[i];
+        if (i === currentIdx && !isReviewMode) {
+            btn.style.background = 'var(--gold)';
+            btn.style.color = 'var(--navy)';
+            btn.style.borderColor = 'var(--gold)';
+        } else if (i === reviewIndex && isReviewMode) {
+            btn.style.background = '#a78bfa';
+            btn.style.color = '#fff';
+            btn.style.borderColor = '#a78bfa';
+        } else if (status.answered) {
+            btn.style.background = status.isCorrect ? 'var(--green)' : 'var(--red)';
+            btn.style.color = '#fff';
+        } else if (status.skipped || status.timeout) {
+            btn.style.background = '#fbbf24';
+            btn.style.color = '#fff';
+        } else {
+            btn.style.background = 'var(--bg)';
+            btn.style.color = 'var(--sub)';
+        }
+        btn.onclick = () => goToQuestion(i);
+        nav.appendChild(btn);
+    }
+}
+
+        function goToQuestion(index) {
+    if (index === currentIdx && !isReviewMode) return;
+    const status = questionStatus[index];
+    if (!status.answered && !status.skipped && !status.timeout) {
+        if (isReviewMode) exitReviewMode();
+        currentIdx = index;
+        renderQ();
+        return;
+    }
+    if (isReviewMode && reviewIndex === index) {
+        exitReviewMode();
+        return;
+    }
+    enterReviewMode(index);
+}
+
+        function enterReviewMode(index) {
+    isReviewMode = true;
+    reviewIndex = index;
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    const q = currentQuestions[index];
+    const d = DB[currentSubjectKey] || {};
+    document.getElementById('quiz-subject-name').textContent = d.name || currentSubjectKey;
+    document.getElementById('quiz-progress').textContent = `回看第 ${index+1} 题 / 共 ${currentQuestions.length} 题`;
+    document.getElementById('q-label').textContent = `${d.name||''} · 回看模式`;
+    const typeMap = { single: '单选题', multi: '多选题', fill: '填空题', judge: '判断题', short: '简答题' };
+    document.getElementById('q-badge').textContent = typeMap[q.type] || '题目';
+    document.getElementById('q-text').textContent = q.q;
+    const optionsContainer = document.getElementById('options-list');
+    optionsContainer.innerHTML = '';
+    const fillBox = document.getElementById('fill-box');
+    fillBox.style.display = 'none';
+    if (q.opts && q.opts.length) {
+        const letters = ['A','B','C','D','E'];
+        const status = questionStatus[index];
+        q.opts.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            const letter = letters[i] || String.fromCharCode(65+i);
+            const text = opt.replace(/^[A-Ea-e][.、．）)\s]\s*/, '');
+            btn.innerHTML = `<span class="opt-label">${letter}</span><span class="opt-text">${text}</span>`;
+            btn.style.cursor = 'default';
+            btn.style.opacity = '0.7';
+            const userAns = status.userAnswer || '';
+            if (userAns.includes(letter)) {
+                btn.style.borderColor = status.isCorrect ? 'var(--green)' : 'var(--red)';
+                btn.style.background = status.isCorrect ? 'var(--green-bg)' : '#fef2f2';
+                btn.querySelector('.opt-label').style.background = status.isCorrect ? 'var(--green)' : 'var(--red)';
+                btn.querySelector('.opt-label').style.color = '#fff';
+            }
+            if (q.ans && q.ans.includes(letter)) {
+                btn.style.borderColor = 'var(--green)';
+                btn.style.background = 'var(--green-bg)';
+                if (!userAns.includes(letter)) {
+                    btn.querySelector('.opt-label').style.background = 'var(--green)';
+                    btn.querySelector('.opt-label').style.color = '#fff';
+                }
+            }
+            optionsContainer.appendChild(btn);
+        });
+        if (q.type === 'fill' || q.type === 'judge' || q.type === 'short') {
+            fillBox.style.display = 'block';
+            document.getElementById('fill-ans').textContent = q.ans || '（无答案）';
+        }
+    } else {
+        fillBox.style.display = 'block';
+        document.getElementById('fill-ans').textContent = q.ans || '（无答案）';
+    }
+    document.getElementById('action-row').style.display = 'none';
+    document.getElementById('record-row').style.display = 'none';
+    document.getElementById('continue-btn').style.display = 'inline-block';
+    const skipBtn = document.querySelector('.nav-row .skip-btn:not(#continue-btn)');
+    if (skipBtn) skipBtn.style.display = 'none';
+    document.getElementById('progress-fill').style.width = Math.max(4, (index + 1) / currentQuestions.length * 100) + '%';
+    renderQuestionNav();
+}
+
+        function exitReviewMode() {
+    isReviewMode = false;
+    reviewIndex = -1;
+    if (!timerInterval) {
+        startTimer();
+    }
+    document.getElementById('continue-btn').style.display = 'none';
+    const skipBtn = document.querySelector('.nav-row .skip-btn:not(#continue-btn)');
+    if (skipBtn) skipBtn.style.display = 'inline-block';
+    renderQ();
 }
 
         function startTimer() {
@@ -3333,64 +3483,98 @@
         function stopTimer() { clearInterval(timerInterval); }
 
         function handleTimeout() {
-            if (answerShown) return;
-            isTimeUp = true;
-            answerShown = true;
-            const q = currentQuestions[currentIdx];
-            const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
-            // 显示正确答案
-            document.querySelectorAll('.option-btn').forEach(btn => {
-                btn.disabled = true;
-                const l = btn.querySelector('.opt-label')?.textContent;
-                if (q.ans && q.ans.includes(l)) btn.classList.add('correct');
-            });
-            if (q.type === 'fill' || q.type === 'judge' || q.type === 'short') {
-                document.getElementById('fill-box').style.display = 'block';
-                document.getElementById('fill-ans').textContent = q.ans || '（无参考答案）';
-            }
-            document.getElementById('action-row').style.display = 'none';
-            document.getElementById('record-row').style.display = 'none';
-            answerLog.push({ time: new Date().toLocaleString(), subject: DB[currentSubjectKey]?.name || '', type: q.type ||
-                    '', question: q.q, userAnswer: '超时', correctAnswer: q.ans || '无', result: '⏰ 超时',
-                timeSpent: elapsed + '秒' });
-            currentWrong.push({ ...q, idx: currentIdx + 1, skipped: false, timeout: true });
-            saveWrongToStorage(currentSubjectKey, q.type, currentWrong);
-            saveWrongToStorage('required', currentSubjectKey, currentWrong);
-            // 1秒后嘲讽
-            setTimeout(() => {
-                showMock(() => { currentIdx++;
-                    renderQ(); }, 600);
-            }, 1000);
-        }
+    if (answerShown) return;
+    isTimeUp = true;
+    answerShown = true;
+    const q = currentQuestions[currentIdx];
+    const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
+
+    // 更新答题状态
+    if (typeof questionStatus !== 'undefined' && questionStatus[currentIdx]) {
+        questionStatus[currentIdx] = {
+            answered: false,
+            userAnswer: null,
+            isCorrect: false,
+            skipped: false,
+            timeout: true
+        };
+    }
+
+    // 显示正确答案
+    document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.disabled = true;
+        const l = btn.querySelector('.opt-label')?.textContent;
+        if (q.ans && q.ans.includes(l)) btn.classList.add('correct');
+    });
+    if (q.type === 'fill' || q.type === 'judge' || q.type === 'short') {
+        document.getElementById('fill-box').style.display = 'block';
+        document.getElementById('fill-ans').textContent = q.ans || '（无参考答案）';
+    }
+    document.getElementById('action-row').style.display = 'none';
+    document.getElementById('record-row').style.display = 'none';
+    answerLog.push({
+        time: new Date().toLocaleString(),
+        subject: DB[currentSubjectKey]?.name || '',
+        type: q.type || '',
+        question: q.q,
+        options: q.opts || [],
+        userAnswer: '超时',
+        correctAnswer: q.ans || '无',
+        result: '⏰ 超时',
+        timeSpent: elapsed + '秒'
+    });
+    currentWrong.push({ ...q, idx: currentIdx + 1, skipped: false, timeout: true });
+    saveWrongToStorage('required', currentSubjectKey, currentWrong);
+    setTimeout(() => {
+        showMock(() => { currentIdx++; renderQ(); }, 600);
+    }, 1000);
+}
 
         function handleOptionClick(clickedBtn, letter, q) {
-            if (answerShown) return;
-            stopTimer();
-            answerShown = true;
-            const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
-            document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
-            const isCorrect = q.ans && q.ans.includes(letter);
-            // 显示正确答案
-            document.querySelectorAll('.option-btn').forEach(btn => {
-                const l = btn.querySelector('.opt-label').textContent;
-                if (q.ans && q.ans.includes(l)) btn.classList.add('correct');
-            });
-            answerLog.push({ time: new Date().toLocaleString(), subject: DB[currentSubjectKey]?.name || '', type: '单选题',
-                question: q.q, userAnswer: letter, correctAnswer: q.ans || '无', result: isCorrect ? '✅ 正确' :
-                    '❌ 错误', timeSpent: elapsed + '秒' });
-            if (isCorrect) {
-                currentScore++;
-                setTimeout(() => { currentIdx++;
-                    renderQ(); }, 900);
-            } else {
-                clickedBtn.classList.add('wrong');
-                currentWrong.push({ ...q, idx: currentIdx + 1 });
-                saveWrongToStorage('required', currentSubjectKey, currentWrong);
-                saveWrongToStorage(currentSubjectKey, q.type, currentWrong);
-                setTimeout(() => showMock(() => { currentIdx++;
-                    renderQ(); }, 600), 1000);
-            }
-        }
+    if (answerShown) return;
+    stopTimer();
+    answerShown = true;
+    const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
+    document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+    const isCorrect = q.ans && q.ans.includes(letter);
+    // 显示正确答案
+    document.querySelectorAll('.option-btn').forEach(btn => {
+        const l = btn.querySelector('.opt-label').textContent;
+        if (q.ans && q.ans.includes(l)) btn.classList.add('correct');
+    });
+
+    // 更新答题状态（用于题号导航）
+    if (typeof questionStatus !== 'undefined' && questionStatus[currentIdx]) {
+        questionStatus[currentIdx] = {
+            answered: true,
+            userAnswer: letter,
+            isCorrect: isCorrect,
+            skipped: false,
+            timeout: false
+        };
+    }
+
+    answerLog.push({
+        time: new Date().toLocaleString(),
+        subject: DB[currentSubjectKey]?.name || '',
+        type: '单选题',
+        question: q.q,
+        options: q.opts || [],
+        userAnswer: letter,
+        correctAnswer: q.ans || '无',
+        result: isCorrect ? '✅ 正确' : '❌ 错误',
+        timeSpent: elapsed + '秒'
+    });
+    if (isCorrect) {
+        currentScore++;
+        setTimeout(() => { currentIdx++; renderQ(); }, 900);
+    } else {
+        clickedBtn.classList.add('wrong');
+        currentWrong.push({ ...q, idx: currentIdx + 1 });
+        saveWrongToStorage('required', currentSubjectKey, currentWrong);
+        setTimeout(() => showMock(() => { currentIdx++; renderQ(); }, 600), 1000);
+    }
+}
 
         function handleJudgeClick(clickedBtn, userAnswer, q) {
     if (answerShown) return;
@@ -3426,32 +3610,48 @@
 }
 
         function submitMultiAnswer() {
-            if (answerShown) return;
-            stopTimer();
-            answerShown = true;
-            const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
-            const q = currentQuestions[currentIdx];
-            const selected = [...document.querySelectorAll('.option-btn.selected')].map(b => b.dataset.letter).sort().join(
-            '');
-            const correct = (q.ans || '').split('').sort().join('');
-            const isCorrect = selected === correct;
-            document.querySelectorAll('.option-btn').forEach(btn => {
-                btn.disabled = true;
-                if (q.ans && q.ans.includes(btn.dataset.letter)) btn.classList.add('correct');
-                else if (btn.classList.contains('selected')) btn.classList.add('wrong');
-            });
-            answerLog.push({ time: new Date().toLocaleString(), subject: DB[currentSubjectKey]?.name || '', type: '多选题',
-                question: q.q, userAnswer: selected, correctAnswer: q.ans || '无', result: isCorrect ? '✅ 正确' :
-                    '❌ 错误', timeSpent: elapsed + '秒' });
-            document.getElementById('action-row').style.display = 'none';
-            if (isCorrect) { currentScore++;
-                setTimeout(() => { currentIdx++;
-                    renderQ(); }, 900); } else { currentWrong.push({ ...q, idx: currentIdx + 1 });
-                    saveWrongToStorage('required', currentSubjectKey, currentWrong);
-                saveWrongToStorage(currentSubjectKey, q.type, currentWrong);
-                setTimeout(() => showMock(() => { currentIdx++;
-                    renderQ(); }, 600), 1000); }
-        }
+    if (answerShown) return;
+    stopTimer();
+    answerShown = true;
+    const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
+    const q = currentQuestions[currentIdx];
+    const selected = [...document.querySelectorAll('.option-btn.selected')].map(b => b.dataset.letter).sort().join('');
+    const correct = (q.ans || '').split('').sort().join('');
+    const isCorrect = selected === correct;
+    document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.disabled = true;
+        if (q.ans && q.ans.includes(btn.dataset.letter)) btn.classList.add('correct');
+        else if (btn.classList.contains('selected')) btn.classList.add('wrong');
+    });
+
+    // 更新答题状态
+    if (typeof questionStatus !== 'undefined' && questionStatus[currentIdx]) {
+        questionStatus[currentIdx] = {
+            answered: true,
+            userAnswer: selected,
+            isCorrect: isCorrect,
+            skipped: false,
+            timeout: false
+        };
+    }
+
+    answerLog.push({
+        time: new Date().toLocaleString(),
+        subject: DB[currentSubjectKey]?.name || '',
+        type: '多选题',
+        question: q.q,
+        options: q.opts || [],
+        userAnswer: selected,
+        correctAnswer: q.ans || '无',
+        result: isCorrect ? '✅ 正确' : '❌ 错误',
+        timeSpent: elapsed + '秒'
+    });
+    document.getElementById('action-row').style.display = 'none';
+    if (isCorrect) { currentScore++;
+        setTimeout(() => { currentIdx++; renderQ(); }, 900); } else { currentWrong.push({ ...q, idx: currentIdx + 1 });
+        saveWrongToStorage('required', currentSubjectKey, currentWrong);
+        setTimeout(() => showMock(() => { currentIdx++; renderQ(); }, 600), 1000); }
+}
 
         function showAnswer() {
             if (answerShown) return;
@@ -3465,27 +3665,57 @@
         }
 
         function recordResult(isCorrect) {
-            const q = currentQuestions[currentIdx];
-            const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
-            answerLog.push({ time: new Date().toLocaleString(), subject: DB[currentSubjectKey]?.name || '', type: q.type ||
-                    '', question: q.q, userAnswer: '手动', correctAnswer: q.ans || '无', result: isCorrect ? '✅ 正确' :
-                    '❌ 错误', timeSpent: elapsed + '秒' });
-            if (isCorrect) { currentScore++;
-                currentIdx++;
-                renderQ(); } else { currentWrong.push({ ...q, idx: currentIdx + 1 });
-                saveWrongToStorage('required', currentSubjectKey, currentWrong);
-                saveWrongToStorage(currentSubjectKey, q.type, currentWrong);
-                setTimeout(() => showMock(() => { currentIdx++;
-                    renderQ(); }, 600), 1000); }
-        }
+    const q = currentQuestions[currentIdx];
+    const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
+
+    // 更新答题状态
+    if (typeof questionStatus !== 'undefined' && questionStatus[currentIdx]) {
+        questionStatus[currentIdx] = {
+            answered: true,
+            userAnswer: isCorrect ? '正确' : '错误',
+            isCorrect: isCorrect,
+            skipped: false,
+            timeout: false
+        };
+    }
+
+    answerLog.push({
+        time: new Date().toLocaleString(),
+        subject: DB[currentSubjectKey]?.name || '',
+        type: q.type || '',
+        question: q.q,
+        options: q.opts || [],
+        userAnswer: isCorrect ? '正确' : '错误',
+        correctAnswer: q.ans || '无',
+        result: isCorrect ? '✅ 正确' : '❌ 错误',
+        timeSpent: elapsed + '秒'
+    });
+    if (isCorrect) { currentScore++;
+        currentIdx++;
+        renderQ(); } else { currentWrong.push({ ...q, idx: currentIdx + 1 });
+        saveWrongToStorage('required', currentSubjectKey, currentWrong);
+        setTimeout(() => showMock(() => { currentIdx++; renderQ(); }, 600), 1000); }
+}
 
         function skipQ() {
-            const q = currentQuestions[currentIdx];
-            currentWrong.push({ ...q, idx: currentIdx + 1, skipped: true });
-            saveWrongToStorage('required', currentSubjectKey, currentWrong);
-            currentIdx++;
-            renderQ();
-        }
+    const q = currentQuestions[currentIdx];
+
+    // 更新答题状态
+    if (typeof questionStatus !== 'undefined' && questionStatus[currentIdx]) {
+        questionStatus[currentIdx] = {
+            answered: false,
+            userAnswer: null,
+            isCorrect: false,
+            skipped: true,
+            timeout: false
+        };
+    }
+
+    currentWrong.push({ ...q, idx: currentIdx + 1, skipped: true });
+    saveWrongToStorage('required', currentSubjectKey, currentWrong);
+    currentIdx++;
+    renderQ();
+}
 
         function confirmFinishQuiz() {
     if (currentQuestions.length === 0) return;
@@ -3503,32 +3733,33 @@
 
         function finishQuiz() {
     stopTimer();
-    // 保存当前成绩
     sessionResults[currentSubjectKey] = {
         score: currentScore,
         total: currentQuestions.length,
         wrong: currentWrong
     };
-    // 清空当前答题状态（防止通过“③答题”继续）
     currentQuestions = [];
     currentIdx = 0;
-    // 跳转到汇总结果
-    showFinalResult();
+    showPage('result');  // 改为 showPage('result')
 }
 
-        function saveWrongToStorage(subKey, type, wrongArr) {
-            const ids = wrongArr.filter(q => q._id).map(q => q._id);
-            localStorage.setItem('wrongIds_' + subKey, JSON.stringify(ids));
-        }
+        function saveWrongToStorage(module, subKey, wrongArr) {
+    const key = STORAGE_KEYS[module + '_wrong'] + (subKey || '');
+    const data = wrongArr.map(w => ({
+        ...w,
+        _timestamp: Date.now(),
+        _date: new Date().toISOString()
+    }));
+    localStorage.setItem(key, JSON.stringify(data));
+}
         // ===== 错题标签切换 =====
         let currentWrongTab = 'required';
 
         function switchWrongTab(tab) {
     currentWrongTab = tab;
-    // 隐藏所有错题容器
     document.querySelectorAll('#wrong-section > div[id^="wrong-"]').forEach(el => el.style.display = 'none');
-    document.getElementById('wrong-' + tab).style.display = 'block';
-    // 更新按钮样式
+    const target = document.getElementById('wrong-' + tab);
+    if (target) target.style.display = 'block';
     document.querySelectorAll('#wrong-section .back-btn').forEach(btn => {
         btn.style.background = '';
         btn.style.color = '';
@@ -3548,19 +3779,24 @@
     if (tab === 'required') {
         SUBJECTS.forEach(sub => {
             const w = loadWrongFromStorage('required', sub.key);
-            wrongArr = wrongArr.concat(w);
+            if (w && w.length > 0) {
+                wrongArr = wrongArr.concat(w);
+            }
         });
     } else if (tab === 'rush') {
         wrongArr = loadWrongFromStorage('rush', null);
     } else if (tab === 'risk') {
         wrongArr = loadWrongFromStorage('risk', null);
     }
+
+    // 按时间倒序
     wrongArr.sort((a, b) => (b._timestamp || 0) - (a._timestamp || 0));
 
-    if (!wrongArr.length) {
+    if (!wrongArr || wrongArr.length === 0) {
         container.innerHTML = `<div class="no-wrong"><div class="nw-icon">🎉</div><div class="nw-text">暂无错题</div></div>`;
         return;
     }
+
     let html = '';
     wrongArr.forEach(q => {
         let optsHtml = '';
@@ -3574,13 +3810,13 @@
             }).join('')}</div>`;
         }
         const timeStr = q._date ? new Date(q._date).toLocaleString() : '未知';
-        const duration = q.duration ? `（用时 ${q.duration}秒）` : '';
+        const subjectName = q.subjectName || q.subName || '';
         html += `
             <div class="wrong-item">
                 <div class="wi-top">
                     <span class="wi-tag ${q.skipped?'wi-skip':q.timeout?'wi-timeout':''}">${q.skipped?'跳过':q.timeout?'超时':'答错'}</span>
-                    <span class="wi-sub">${timeStr} ${duration}</span>
-                    <span class="wi-sub" style="margin-left:auto;">${q.subjectName||q.subName||''}</span>
+                    <span class="wi-sub">${timeStr}</span>
+                    <span class="wi-sub" style="margin-left:auto;">${subjectName}</span>
                 </div>
                 <div class="wi-q">${q.idx ? '第'+q.idx+'题：' : ''}${q.q}</div>
                 ${optsHtml}
@@ -3631,7 +3867,7 @@
             total: total,
             score: score,
             pct: pct,
-            wrong: r ? r.wrong || [] : []
+            wrong: (r && r.wrong) ? r.wrong : []
         };
 
         const pctColor = pct >= 80 ? '#16a34a' : pct >= 60 ? '#d97706' : '#dc2626';
@@ -3671,18 +3907,29 @@
             } else {
                 html += `<div style="max-height:200px;overflow-y:auto;font-size:12px;">`;
                 wrongItems.forEach(q => {
-                    let ansDisplay = q.ans || '无';
+                    let optionsText = '';
                     if (q.opts && q.opts.length) {
                         const letters = ['A','B','C','D','E'];
-                        const ansLetters = ansDisplay.split('').filter(l => letters.includes(l)).join('');
-                        ansDisplay = ansLetters || ansDisplay;
+                        const ansLetters = (q.ans || '').split('').filter(l => letters.includes(l));
+                        optionsText = q.opts.map((opt, idx) => {
+                            const letter = opt.match(/^([A-Ea-e])[.、．）)\s]/)?.[1]?.toUpperCase() || letters[idx] || '';
+                            const text = opt.replace(/^[A-Ea-e][.、．）)\s]\s*/, '');
+                            const isAns = ansLetters.includes(letter);
+                            return `<span style="${isAns ? 'color:var(--green);font-weight:700;' : ''}">${letter}. ${text}${isAns ? ' ✓' : ''}</span>`;
+                        }).join(' &nbsp;|&nbsp; ');
                     }
+                    const ansDisplay = q.ans || '无';
+                    const statusText = q.skipped ? '跳过' : q.timeout ? '超时' : '✗';
+                    const statusColor = q.skipped ? '#d97706' : q.timeout ? '#d97706' : 'var(--red)';
                     html += `
                         <div style="padding:4px 0;border-bottom:1px solid var(--border);">
-                            <span style="color:var(--red);font-weight:800;">${q.skipped?'跳过':q.timeout?'超时':'✗'}</span>
-                            <span style="color:var(--sub);">第${q.idx}题</span>
-                            <span style="color:var(--navy);margin-left:4px;">${q.q.length > 12 ? q.q.slice(0,12)+'…' : q.q}</span>
-                            <span style="float:right;color:var(--green);font-weight:700;">✓ ${ansDisplay}</span>
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <span style="color:${statusColor};font-weight:800;">${statusText}</span>
+                                <span style="color:var(--sub);">第${q.idx}题</span>
+                                <span style="color:var(--navy);font-weight:600;">${q.q.length > 8 ? q.q.slice(0,8)+'…' : q.q}</span>
+                            </div>
+                            ${optionsText ? `<div style="font-size:11px;color:var(--sub);margin-top:2px;">${optionsText}</div>` : ''}
+                            <div style="font-size:11px;color:var(--green);margin-top:2px;">✅ 正确答案：${ansDisplay}</div>
                         </div>
                     `;
                 });
@@ -3706,16 +3953,43 @@
     const logBody = document.getElementById('log-body');
     if (logBody) {
         logBody.innerHTML = '';
-        answerLog.forEach(e => {
-            const tr = document.createElement('tr');
-            const cls = e.result.includes('正确') ? 'log-correct' : e.result.includes('超时') ? 'log-timeout' : 'log-wrong';
-            tr.innerHTML =
-                `<td>${e.time}</td><td>${e.subject}</td><td>${e.type}</td><td style="max-width:300px">${e.question}</td><td>${e.userAnswer}</td><td>${e.correctAnswer}</td><td class="${cls}">${e.result}</td><td>${e.timeSpent}</td>`;
-            logBody.appendChild(tr);
-        });
+        if (!answerLog || answerLog.length === 0) {
+            logBody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--sub);padding:20px;">暂无答题记录</td></tr>';
+        } else {
+            answerLog.forEach(e => {
+                const tr = document.createElement('tr');
+                const cls = e.result.includes('正确') ? 'log-correct' : e.result.includes('超时') ? 'log-timeout' : 'log-wrong';
+                let correctFullText = e.correctAnswer || '';
+                let userFullText = e.userAnswer || '';
+                if (e.options && e.options.length) {
+                    const optMap = {};
+                    e.options.forEach(opt => {
+                        const match = opt.match(/^([A-Ea-e])[.、．）)\s]/);
+                        if (match) optMap[match[1].toUpperCase()] = opt;
+                    });
+                    if (e.correctAnswer) {
+                        correctFullText = e.correctAnswer.split('').map(l => optMap[l] || l).join('、');
+                    }
+                    if (e.userAnswer && e.userAnswer !== '超时' && e.userAnswer !== '跳过' && e.userAnswer !== '未选' && e.userAnswer !== '手动') {
+                        userFullText = e.userAnswer.split('').map(l => optMap[l] || l).join('、');
+                    }
+                }
+                tr.innerHTML = `
+                    <td>${e.time}</td>
+                    <td>${e.subject}</td>
+                    <td>${e.type}</td>
+                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${e.question}">${e.question}</td>
+                    <td>${userFullText}</td>
+                    <td>${correctFullText}</td>
+                    <td class="${cls}">${e.result}</td>
+                    <td>${e.timeSpent}</td>
+                `;
+                logBody.appendChild(tr);
+            });
+        }
     }
 
-    showPage('result');
+    // 注意：不在此处调用 showPage('result')，由调用者负责
 }
 
         function exportLog() {
@@ -3732,7 +4006,12 @@
             a.click();
         }
 
-        function scrollToWrong() { document.getElementById('wrong-section').scrollIntoView({ behavior: 'smooth' }); }
+        function scrollToWrong() {
+    const el = document.getElementById('wrong-section');
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+    }
+}
 
         // ════════════════════════════════════════════════════════════════
         // 抢答题
@@ -4541,7 +4820,7 @@
     </script>
     <!-- 浮动汇总按钮（在所有页面显示，点击跳转汇总结果） -->
 <div style="position:fixed; bottom:20px; right:20px; z-index:9999;">
-    <button onclick="showFinalResult()" style="
+    <button onclick="showPage('result')" style="
         background:linear-gradient(135deg,var(--gold),#c09030);
         color:var(--navy);
         border:none;
