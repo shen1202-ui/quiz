@@ -1501,49 +1501,49 @@
     </div>
 
     <!-- ⑤ 必答题汇总结果页 -->
+    <!-- ⑤ 必答题汇总结果页 -->
+    <!-- ⑤ 必答题汇总结果页 -->
     <div class="page" id="page-result">
-        <div class="result-hero">
-            <div class="rh-emoji">🎯</div>
-            <div class="rh-title">必答题完成！</div>
-            <div class="rh-ring">
-                <div class="rh-pct" id="r-total-pct">0%</div>
-                <div class="rh-pct-label">综合正确率</div>
-            </div>
-            <div class="rh-stats">
-                <div class="rh-stat s-total"><div class="rs-num" id="r-total">0</div><div class="rs-label">总题数</div></div>
-                <div class="rh-stat s-correct"><div class="rs-num" id="r-correct">0</div><div class="rs-label">答对</div></div>
-                <div class="rh-stat s-wrong"><div class="rs-num" id="r-wrong">0</div><div class="rs-label">答错/跳过</div></div>
-            </div>
-            <div class="rh-btns">
-                <button class="rh-btn rh-btn-review" onclick="scrollToWrong()">📋 错题回顾</button>
-                <button class="rh-btn rh-btn-review" onclick="exportLog()">📥 导出日志</button>
-                <button class="rh-btn rh-btn-home" onclick="showPage('config')">🏠 返回主菜单</button>
-            </div>
+    <div class="result-hero">
+        <div class="rh-emoji">🎯</div>
+        <div class="rh-title">必答题完成！</div>
+        <div class="rh-ring">
+            <div class="rh-pct" id="r-total-pct">0%</div>
+            <div class="rh-pct-label">综合正确率</div>
         </div>
-        <div class="subject-results" id="subject-results"></div>
-        <div style="margin-top:8px" id="wrong-section">
-            <div class="sec-title">📋 错题回顾</div>
-            <!-- 三个模块切换标签 -->
-            <div style="display:flex;gap:12px;margin-bottom:16px;">
-            <button class="back-btn" onclick="switchWrongTab('required')" id="tab-required" style="background:var(--navy);color:#fff;">必答题错题</button>
-            <button class="back-btn" onclick="switchWrongTab('rush')" id="tab-rush">抢答题错题</button>
-            <button class="back-btn" onclick="switchWrongTab('risk')" id="tab-risk">风险题错题</button>
-            </div>
-            <!-- 三个容器 -->
-            <div id="wrong-required"></div>
-            <div id="wrong-rush" style="display:none;"></div>
-            <div id="wrong-risk" style="display:none;"></div>
+        <div class="rh-stats">
+            <div class="rh-stat s-total"><div class="rs-num" id="r-total">0</div><div class="rs-label">总题数</div></div>
+            <div class="rh-stat s-correct"><div class="rs-num" id="r-correct">0</div><div class="rs-label">答对</div></div>
+            <div class="rh-stat s-wrong"><div class="rs-num" id="r-wrong">0</div><div class="rs-label">答错/跳过</div></div>
         </div>
-        <div style="margin-top:24px">
-            <div class="sec-title">答题日志</div>
-            <div class="log-table-wrap">
-                <table class="log-table">
-                    <thead><tr><th>时间</th><th>专业</th><th>题型</th><th>题目</th><th>你的答案</th><th>正确答案</th><th>结果</th><th>用时</th></tr></thead>
-                    <tbody id="log-body"></tbody>
-                </table>
-            </div>
+        <div class="rh-btns">
+            <button class="rh-btn rh-btn-review" onclick="scrollToWrong()">📋 错题回顾</button>
+            <button class="rh-btn rh-btn-review" onclick="exportLog()">📥 导出日志</button>
+            <button class="rh-btn rh-btn-home" onclick="showPage('select')" style="background:#1a6faf;color:#fff;">📝 返回选题</button>
+            <button class="rh-btn rh-btn-home" onclick="showPage('config')">⚙ 重新配置</button>
         </div>
     </div>
+
+    <!-- 各专业得分卡片 -->
+    <div class="subject-results" id="subject-results"></div>
+
+    <!-- 各专业错题卡片 -->
+    <div style="margin-top:24px;">
+        <div class="sec-title">📋 各专业错题回顾</div>
+        <div id="subject-wrongs" style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;"></div>
+    </div>
+
+    <!-- 答题日志 -->
+    <div style="margin-top:24px">
+        <div class="sec-title">📋 答题日志</div>
+        <div class="log-table-wrap">
+            <table class="log-table">
+                <thead><tr><th>时间</th><th>专业</th><th>题型</th><th>题目</th><th>你的答案</th><th>正确答案</th><th>结果</th><th>用时</th></tr></thead>
+                <tbody id="log-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
     <!-- ============================================================ -->
     <!-- ⑥ 抢答题配置页 -->
@@ -3565,17 +3565,35 @@
         // 必答题结果（含错题选项显示修复）
         // ════════════════════════════════════════════════════════════════
         function showFinalResult() {
-    let totalQ = 0, totalCorrect = 0, allWrong = [];
+    let totalQ = 0, totalCorrect = 0;
     const subCards = document.getElementById('subject-results');
+    const wrongCards = document.getElementById('subject-wrongs');
     if (subCards) subCards.innerHTML = '';
+    if (wrongCards) wrongCards.innerHTML = '';
+
+    const subData = {};
+
+    // 1. 生成得分卡片 & 收集数据
     SUBJECTS.forEach(sub => {
         const d = DB[sub.key] || {};
         const c = COLORS[sub.key] || {};
         const r = sessionResults[sub.key];
-        const total = r ? r.total : 0, score = r ? r.score : 0;
+        const total = r ? r.total : 0;
+        const score = r ? r.score : 0;
         const pct = total > 0 ? Math.round(score / total * 100) : 0;
-        totalQ += total; totalCorrect += score;
-        if (r) allWrong.push(...r.wrong.map(w => ({ ...w, subjectName: d.name })));
+        totalQ += total;
+        totalCorrect += score;
+
+        subData[sub.key] = {
+            name: d.name || sub.key,
+            icon: d.icon || '📄',
+            color: c.accent || '#ccc',
+            total: total,
+            score: score,
+            pct: pct,
+            wrong: r ? r.wrong || [] : []
+        };
+
         const pctColor = pct >= 80 ? '#16a34a' : pct >= 60 ? '#d97706' : '#dc2626';
         const card = document.createElement('div');
         card.className = 'sr-card';
@@ -3589,52 +3607,62 @@
         if (subCards) subCards.appendChild(card);
     });
 
-    const totalPct = totalQ > 0 ? Math.round(totalCorrect / totalQ * 100) : 0;
-    const rTotalPct = document.getElementById('r-total-pct');
-    if (rTotalPct) rTotalPct.textContent = totalPct + '%';
-    const rTotal = document.getElementById('r-total');
-    if (rTotal) rTotal.textContent = totalQ;
-    const rCorrect = document.getElementById('r-correct');
-    if (rCorrect) rCorrect.textContent = totalCorrect;
-    const rWrong = document.getElementById('r-wrong');
-    if (rWrong) rWrong.textContent = totalQ - totalCorrect;
+    // 2. 生成各专业错题卡片
+    if (wrongCards) {
+        SUBJECTS.forEach(sub => {
+            const data = subData[sub.key];
+            const wrongItems = data.wrong;
+            const card = document.createElement('div');
+            card.className = 'sr-card';
+            card.style.setProperty('--c-accent', data.color);
+            card.style.padding = '16px 12px';
+            card.style.textAlign = 'left';
 
-    // 错题渲染到 wrong-required
-    const container = document.getElementById('wrong-required');
-    if (container) {
-        let html = '';
-        if (!allWrong.length) {
-            html = `<div class="no-wrong"><div class="nw-icon">🎉</div><div class="nw-text">全部答对！</div></div>`;
-        } else {
-            allWrong.forEach(q => {
-                let optsHtml = '';
-                if (q.opts && q.opts.length) {
-                    const letters = ['A','B','C','D','E'];
-                    optsHtml = `<div class="wi-opts">${q.opts.map((opt,i)=>{
-                        const letter = opt.match(/^([A-Ea-e])[.、．）)\s]/)?.[1]?.toUpperCase() || letters[i];
-                        const text = opt.replace(/^[A-Ea-e][.、．）)\s]\s*/,'');
-                        const isAns = q.ans && q.ans.includes(letter);
-                        return `<div class="wi-opt ${isAns?'wi-opt-correct':''}">${letter}. ${text}${isAns?' ✓':''}</div>`;
-                    }).join('')}</div>`;
-                }
-                html += `
-                    <div class="wrong-item">
-                        <div class="wi-top">
-                            <span class="wi-tag ${q.skipped?'wi-skip':q.timeout?'wi-timeout':''}">${q.skipped?'跳过':q.timeout?'超时':'答错'}</span>
-                            <span class="wi-sub">第${q.idx}题 · ${q.subjectName||''}</span>
+            let html = `
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                    <span style="font-size:20px;">${data.icon}</span>
+                    <span style="font-weight:700;font-size:14px;color:var(--navy);">${data.name}</span>
+                    <span style="margin-left:auto;font-size:12px;color:var(--sub);">正确率 ${data.pct}%</span>
+                </div>
+            `;
+
+            if (!wrongItems || wrongItems.length === 0) {
+                html += `<div style="text-align:center;padding:16px 0;color:var(--green);font-size:13px;">🎉 暂无错题</div>`;
+            } else {
+                html += `<div style="max-height:200px;overflow-y:auto;font-size:12px;">`;
+                wrongItems.forEach(q => {
+                    let ansDisplay = q.ans || '无';
+                    if (q.opts && q.opts.length) {
+                        const letters = ['A','B','C','D','E'];
+                        const ansLetters = ansDisplay.split('').filter(l => letters.includes(l)).join('');
+                        ansDisplay = ansLetters || ansDisplay;
+                    }
+                    html += `
+                        <div style="padding:4px 0;border-bottom:1px solid var(--border);">
+                            <span style="color:var(--red);font-weight:800;">${q.skipped?'跳过':q.timeout?'超时':'✗'}</span>
+                            <span style="color:var(--sub);">第${q.idx}题</span>
+                            <span style="color:var(--navy);margin-left:4px;">${q.q.length > 12 ? q.q.slice(0,12)+'…' : q.q}</span>
+                            <span style="float:right;color:var(--green);font-weight:700;">✓ ${ansDisplay}</span>
                         </div>
-                        <div class="wi-q">${q.q}</div>
-                        ${optsHtml}
-                        <div class="wi-ans-label">正确答案</div>
-                        <div class="wi-ans">${q.ans||'（无答案）'}</div>
-                    </div>
-                `;
-            });
-        }
-        container.innerHTML = html;
+                    `;
+                });
+                html += `</div>`;
+                html += `<div style="text-align:right;font-size:11px;color:var(--sub);margin-top:6px;">共 ${wrongItems.length} 题</div>`;
+            }
+
+            card.innerHTML = html;
+            wrongCards.appendChild(card);
+        });
     }
 
-    // 日志渲染
+    // 3. 总统计
+    const totalPct = totalQ > 0 ? Math.round(totalCorrect / totalQ * 100) : 0;
+    document.getElementById('r-total-pct').textContent = totalPct + '%';
+    document.getElementById('r-total').textContent = totalQ;
+    document.getElementById('r-correct').textContent = totalCorrect;
+    document.getElementById('r-wrong').textContent = totalQ - totalCorrect;
+
+    // 4. 日志表格
     const logBody = document.getElementById('log-body');
     if (logBody) {
         logBody.innerHTML = '';
