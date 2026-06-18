@@ -3119,10 +3119,10 @@
         const cnt = parseInt(document.getElementById('count_' + sub.key).value);
         if (cnt === 0) { configuredQuestions[sub.key] = []; return; }
 
-        // ---- 构建题库池（支持“全部题型”） ----
+        // ---- 构建题库池（确保每个题目都带有 type 字段） ----
         let pool = [];
         if (type === 'all') {
-            // 从所有题型中合并
+            // 全部题型：从所有题型中合并
             const allTypes = ['single', 'multi', 'fill', 'judge', 'short'];
             allTypes.forEach(t => {
                 if (DB[sub.key] && DB[sub.key][t]) {
@@ -3132,31 +3132,32 @@
                 }
             });
         } else {
-            // 单一题型
-            pool = (DB[sub.key] && DB[sub.key][type]) ? DB[sub.key][type].slice(from, to) : [];
+            // 单一题型：取出并添加 type 字段
+            const raw = (DB[sub.key] && DB[sub.key][type]) ? DB[sub.key][type].slice(from, to) : [];
+            pool = raw.map((q, idx) => ({ ...q, type: type, _id: `${sub.key}_${type}_${from + idx}` }));
         }
 
-        // 统一生成带_id的池（如果已有_id则保留）
-        const poolWithId = pool.map((q, idx) => ({ ...q, _id: q._id || `${sub.key}_${type}_${from + idx}` }));
+        // 如果池子为空，跳过
+        if (pool.length === 0) { configuredQuestions[sub.key] = []; return; }
 
         // ---- 根据练习模式和去重策略抽题 ----
         let picked;
         if (practiceMode === 'wrong') {
             const wrongIds = JSON.parse(localStorage.getItem('wrongIds_' + sub.key) || '[]');
-            const wrongPool = poolWithId.filter(q => wrongIds.includes(q._id));
+            const wrongPool = pool.filter(q => wrongIds.includes(q._id));
             picked = wrongPool.length ? wrongPool.sort(() => Math.random() - .5).slice(0, Math.min(cnt, wrongPool.length)) :
-                                      poolWithId.sort(() => Math.random() - .5).slice(0, Math.min(cnt, poolWithId.length));
+                                      pool.sort(() => Math.random() - .5).slice(0, Math.min(cnt, pool.length));
         } else if (enableDedup) {
             if (!window._questionHistory[sub.key]) window._questionHistory[sub.key] = [];
             const history = window._questionHistory[sub.key];
-            const unseen = poolWithId.filter(q => !history.includes(q._id));
-            const seen = poolWithId.filter(q => history.includes(q._id));
+            const unseen = pool.filter(q => !history.includes(q._id));
+            const seen = pool.filter(q => history.includes(q._id));
             const fromUnseen = unseen.sort(() => Math.random() - .5).slice(0, Math.min(cnt, unseen.length));
             const need = cnt - fromUnseen.length;
             const fromSeen = need > 0 ? seen.sort(() => Math.random() - .5).slice(0, need) : [];
             picked = [...fromUnseen, ...fromSeen];
         } else {
-            picked = poolWithId.sort(() => Math.random() - .5).slice(0, Math.min(cnt, poolWithId.length));
+            picked = pool.sort(() => Math.random() - .5).slice(0, Math.min(cnt, pool.length));
         }
 
         configuredQuestions[sub.key] = picked;
@@ -3223,7 +3224,9 @@
 }
 
         function renderQ() {
+    // 如果已完成所有题目
     if (currentIdx >= currentQuestions.length) {
+        // 记录已做题目ID（去重用）
         if (window._questionHistory) {
             if (!window._questionHistory[currentSubjectKey]) window._questionHistory[currentSubjectKey] = [];
             currentQuestions.forEach(q => {
@@ -3237,11 +3240,14 @@
         return;
     }
 
+    // 停止旧计时器
     stopTimer();
+
     const q = currentQuestions[currentIdx];
     answerShown = false;
     const d = DB[currentSubjectKey] || {};
 
+    // 更新顶部信息
     document.getElementById('quiz-subject-name').textContent = d.name || currentSubjectKey;
     document.getElementById('quiz-progress').textContent = `第 ${currentIdx+1} 题 / 共 ${currentQuestions.length} 题`;
     document.getElementById('progress-fill').style.width = Math.max(4, (currentIdx + 1) / currentQuestions.length * 100) + '%';
@@ -3249,49 +3255,55 @@
     document.getElementById('q-counter').textContent = `已答 ${currentIdx} 题，还剩 ${currentQuestions.length-currentIdx} 题`;
     document.getElementById('q-label').textContent = `${d.name||''} · 第 ${currentIdx+1} 题`;
 
+    // 题目标签
     const typeMap = { single: '单选题', multi: '多选题', fill: '填空题', judge: '判断题', short: '简答题' };
     const badge = document.getElementById('q-badge');
     badge.textContent = typeMap[q.type] || '题目';
     badge.className = 'q-badge' + (q.type === 'multi' ? ' multi' : q.type === 'fill' ? ' fill' : q.type === 'judge' ? ' judge' : q.type === 'short' ? ' short' : '');
 
+    // 题目内容
     document.getElementById('q-text').textContent = q.q;
-    document.getElementById('options-list').innerHTML = '';
-    document.getElementById('fill-box').style.display = 'none';
-    document.getElementById('action-row').style.display = '';
-    document.getElementById('record-row').style.display = 'none';
 
+    // 清空选项区和填空区
+    const optionsContainer = document.getElementById('options-list');
+    optionsContainer.innerHTML = '';
+    document.getElementById('fill-box').style.display = 'none';
+
+    // 根据题型渲染
+    const actionRow = document.getElementById('action-row');
+    const recordRow = document.getElementById('record-row');
+    recordRow.style.display = 'none';
+
+    // 选项打乱（如果开启）
     let options = q.opts || [];
     const cfg = window._quizConfig || {};
     if (cfg.shuffleOptions && options.length > 1) options = [...options].sort(() => Math.random() - .5);
 
-    // ========== 根据题型渲染 ==========
+    // ========== 1. 填空题 / 简答题 ==========
     if (q.type === 'fill' || q.type === 'short') {
-        // 填空/简答：显示“显示答案”按钮
-        document.getElementById('action-row').style.display = 'flex';
-        document.getElementById('record-row').style.display = 'none';
-        const btnShow = document.querySelector('.btn-show');
-        if (btnShow) {
-            btnShow.textContent = '👁 显示答案';
-            btnShow.onclick = showAnswer;
-        }
-    } else if (q.type === 'judge') {
-        // 判断题：显示“正确”和“错误”两个选项
+        // 显示“显示答案”按钮
+        actionRow.style.display = 'flex';
+        actionRow.innerHTML = `<button class="action-btn btn-show" onclick="showAnswer()">👁 显示答案</button>`;
+        recordRow.style.display = 'none';
+    }
+    // ========== 2. 判断题 ==========
+    else if (q.type === 'judge') {
         const judgeOpts = [
             { letter: 'A', text: '正确' },
             { letter: 'B', text: '错误' }
         ];
-        const container = document.getElementById('options-list');
         judgeOpts.forEach(opt => {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
             btn.innerHTML = `<span class="opt-label">${opt.letter}</span><span class="opt-text">${opt.text}</span>`;
             btn.onclick = () => handleJudgeClick(btn, opt.text, q);
-            container.appendChild(btn);
+            optionsContainer.appendChild(btn);
         });
-        document.getElementById('action-row').style.display = 'none';
-        document.getElementById('record-row').style.display = 'none';
-    } else if (q.type === 'multi') {
-        // 多选题
+        actionRow.style.display = 'none';
+        recordRow.style.display = 'none';
+    }
+    // ========== 3. 多选题 ==========
+    else if (q.type === 'multi') {
         const letters = ['A', 'B', 'C', 'D', 'E'];
         options.forEach((opt, i) => {
             const btn = document.createElement('button');
@@ -3300,15 +3312,20 @@
             const text = opt.replace(/^[A-Ea-e][.、．）)\s]\s*/, '');
             btn.innerHTML = `<span class="opt-label">${letter}</span><span class="opt-text">${text}</span>`;
             btn.dataset.letter = letter;
-            btn.onclick = () => btn.classList.toggle('selected');
-            document.getElementById('options-list').appendChild(btn);
+            // 关键：使用 addEventListener 确保只切换当前按钮
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('selected');
+            });
+            optionsContainer.appendChild(btn);
         });
-        document.getElementById('action-row').innerHTML =
-            `<button class="action-btn btn-show" onclick="submitMultiAnswer()">✓ 提交答案</button>`;
-        document.getElementById('action-row').style.display = 'flex';
-        document.getElementById('record-row').style.display = 'none';
-    } else {
-        // 单选题
+        // 显示提交按钮
+        actionRow.style.display = 'flex';
+        actionRow.innerHTML = `<button class="action-btn btn-show" onclick="submitMultiAnswer()">✓ 提交答案</button>`;
+        recordRow.style.display = 'none';
+    }
+    // ========== 4. 单选题 ==========
+    else {
         const letters = ['A', 'B', 'C', 'D', 'E'];
         options.forEach((opt, i) => {
             const btn = document.createElement('button');
@@ -3317,15 +3334,16 @@
             const text = opt.replace(/^[A-Ea-e][.、．）)\s]\s*/, '');
             btn.innerHTML = `<span class="opt-label">${letter}</span><span class="opt-text">${text}</span>`;
             btn.onclick = () => handleOptionClick(btn, letter, q);
-            document.getElementById('options-list').appendChild(btn);
+            optionsContainer.appendChild(btn);
         });
-        document.getElementById('action-row').style.display = 'none';
-        document.getElementById('record-row').style.display = 'none';
+        actionRow.style.display = 'none';
+        recordRow.style.display = 'none';
     }
 
-    // ===== 渲染题号导航 =====
+    // 渲染题号导航
     renderQuestionNav();
 
+    // 记录开始时间并启动计时器
     questionStartTime = Date.now();
     startTimer();
 }
