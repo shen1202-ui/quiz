@@ -3176,84 +3176,100 @@
         }
 
         function renderQ() {
-            if (currentIdx >= currentQuestions.length) {
-                // 记录历史
-                if (window._questionHistory) {
-                    if (!window._questionHistory[currentSubjectKey]) window._questionHistory[currentSubjectKey] = [];
-                    currentQuestions.forEach(q => {
-                        if (q._id && !window._questionHistory[currentSubjectKey].includes(q._id))
-                            window._questionHistory[currentSubjectKey].push(q._id);
-                    });
-                }
-                sessionResults[currentSubjectKey] = { score: currentScore, total: currentQuestions.length, wrong: currentWrong };
-                renderSelectPage();
-                showPage('select');
-                return;
-            }
-
-            stopTimer();
-            const q = currentQuestions[currentIdx];
-            answerShown = false;
-            const d = DB[currentSubjectKey] || {};
-
-            document.getElementById('quiz-subject-name').textContent = d.name || currentSubjectKey;
-            document.getElementById('quiz-progress').textContent = `第 ${currentIdx+1} 题 / 共 ${currentQuestions.length} 题`;
-            document.getElementById('progress-fill').style.width = Math.max(4, (currentIdx + 1) / currentQuestions.length *
-                100) + '%';
-            document.getElementById('quiz-score').textContent = currentScore;
-            document.getElementById('q-counter').textContent = `已答 ${currentIdx} 题，还剩 ${currentQuestions.length-currentIdx} 题`;
-            document.getElementById('q-label').textContent = `${d.name||''} · 第 ${currentIdx+1} 题`;
-
-            const typeMap = { single: '单选题', multi: '多选题', fill: '填空题', judge: '判断题', short: '简答题' };
-            const badge = document.getElementById('q-badge');
-            badge.textContent = typeMap[q.type] || '题目';
-            badge.className = 'q-badge' + (q.type === 'multi' ? ' multi' : q.type === 'fill' ? ' fill' : q.type ===
-                'judge' ? ' judge' : q.type === 'short' ? ' short' : '');
-
-            document.getElementById('q-text').textContent = q.q;
-            document.getElementById('options-list').innerHTML = '';
-            document.getElementById('fill-box').style.display = 'none';
-            document.getElementById('action-row').style.display = '';
-            document.getElementById('record-row').style.display = 'none';
-
-            let options = q.opts || [];
-            const cfg = window._quizConfig || {};
-            if (cfg.shuffleOptions && options.length > 1) options = [...options].sort(() => Math.random() - .5);
-
-            if (q.type === 'fill' || q.type === 'judge' || q.type === 'short') {
-                // 显示答案按钮
-            } else if (q.type === 'multi') {
-                const letters = ['A', 'B', 'C', 'D', 'E'];
-                options.forEach((opt, i) => {
-                    const btn = document.createElement('button');
-                    btn.className = 'option-btn';
-                    const letter = letters[i] || String.fromCharCode(65 + i);
-                    const text = opt.replace(/^[A-Ea-e][.、．）)\s]\s*/, '');
-                    btn.innerHTML = `<span class="opt-label">${letter}</span><span class="opt-text">${text}</span>`;
-                    btn.dataset.letter = letter;
-                    btn.onclick = () => btn.classList.toggle('selected');
-                    document.getElementById('options-list').appendChild(btn);
-                });
-                document.getElementById('action-row').innerHTML =
-                    `<button class="action-btn btn-show" onclick="submitMultiAnswer()">✓ 提交答案</button>`;
-            } else {
-                // 单选题
-                options.forEach((opt, i) => {
-                    const btn = document.createElement('button');
-                    btn.className = 'option-btn';
-                    const letters = ['A', 'B', 'C', 'D', 'E'];
-                    const letter = opt.match(/^([A-Ea-e])[.、．）)\s]/)?.[1]?.toUpperCase() || letters[i];
-                    const text = opt.replace(/^[A-Ea-e][.、．）)\s]\s*/, '');
-                    btn.innerHTML = `<span class="opt-label">${letter}</span><span class="opt-text">${text}</span>`;
-                    btn.onclick = () => handleOptionClick(btn, letter, q);
-                    document.getElementById('options-list').appendChild(btn);
-                });
-                document.getElementById('action-row').style.display = 'none';
-            }
-
-            questionStartTime = Date.now();
-            startTimer();
+    if (currentIdx >= currentQuestions.length) {
+        if (window._questionHistory) {
+            if (!window._questionHistory[currentSubjectKey]) window._questionHistory[currentSubjectKey] = [];
+            currentQuestions.forEach(q => {
+                if (q._id && !window._questionHistory[currentSubjectKey].includes(q._id))
+                    window._questionHistory[currentSubjectKey].push(q._id);
+            });
         }
+        sessionResults[currentSubjectKey] = { score: currentScore, total: currentQuestions.length, wrong: currentWrong };
+        renderSelectPage();
+        showPage('select');
+        return;
+    }
+
+    stopTimer();
+    const q = currentQuestions[currentIdx];
+    answerShown = false;
+    const d = DB[currentSubjectKey] || {};
+
+    document.getElementById('quiz-subject-name').textContent = d.name || currentSubjectKey;
+    document.getElementById('quiz-progress').textContent = `第 ${currentIdx+1} 题 / 共 ${currentQuestions.length} 题`;
+    document.getElementById('progress-fill').style.width = Math.max(4, (currentIdx + 1) / currentQuestions.length * 100) + '%';
+    document.getElementById('quiz-score').textContent = currentScore;
+    document.getElementById('q-counter').textContent = `已答 ${currentIdx} 题，还剩 ${currentQuestions.length-currentIdx} 题`;
+    document.getElementById('q-label').textContent = `${d.name||''} · 第 ${currentIdx+1} 题`;
+
+    const typeMap = { single: '单选题', multi: '多选题', fill: '填空题', judge: '判断题', short: '简答题' };
+    const badge = document.getElementById('q-badge');
+    badge.textContent = typeMap[q.type] || '题目';
+    badge.className = 'q-badge' + (q.type === 'multi' ? ' multi' : q.type === 'fill' ? ' fill' : q.type === 'judge' ? ' judge' : q.type === 'short' ? ' short' : '');
+
+    document.getElementById('q-text').textContent = q.q;
+    document.getElementById('options-list').innerHTML = '';
+    document.getElementById('fill-box').style.display = 'none';
+    document.getElementById('action-row').style.display = '';
+    document.getElementById('record-row').style.display = 'none';
+
+    let options = q.opts || [];
+    const cfg = window._quizConfig || {};
+    if (cfg.shuffleOptions && options.length > 1) options = [...options].sort(() => Math.random() - .5);
+
+    // ----- 判断题分支 -----
+    if (q.type === 'judge') {
+        const judgeOpts = ['正确', '错误'];
+        const letters = ['A', 'B'];
+        const container = document.getElementById('options-list');
+        judgeOpts.forEach((text, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `<span class="opt-label">${letters[idx]}</span><span class="opt-text">${text}</span>`;
+            btn.onclick = () => handleJudgeClick(btn, text, q);
+            container.appendChild(btn);
+        });
+        document.getElementById('action-row').style.display = 'none';
+        document.getElementById('record-row').style.display = 'none';
+    }
+    // ----- 填空/简答分支 -----
+    else if (q.type === 'fill' || q.type === 'short') {
+        // 保持显示答案按钮，不做修改
+    }
+    // ----- 多选题分支 -----
+    else if (q.type === 'multi') {
+        const letters = ['A', 'B', 'C', 'D', 'E'];
+        options.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            const letter = letters[i] || String.fromCharCode(65 + i);
+            const text = opt.replace(/^[A-Ea-e][.、．）)\s]\s*/, '');
+            btn.innerHTML = `<span class="opt-label">${letter}</span><span class="opt-text">${text}</span>`;
+            btn.dataset.letter = letter;
+            btn.onclick = () => btn.classList.toggle('selected');
+            document.getElementById('options-list').appendChild(btn);
+        });
+        document.getElementById('action-row').innerHTML = `<button class="action-btn btn-show" onclick="submitMultiAnswer()">✓ 提交答案</button>`;
+    }
+    // ----- 单选题分支 -----
+    else {
+        const letters = ['A', 'B', 'C', 'D', 'E'];
+        options.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            const letter = opt.match(/^([A-Ea-e])[.、．）)\s]/)?.[1]?.toUpperCase() || letters[i];
+            const text = opt.replace(/^[A-Ea-e][.、．）)\s]\s*/, '');
+            btn.innerHTML = `<span class="opt-label">${letter}</span><span class="opt-text">${text}</span>`;
+            btn.onclick = () => handleOptionClick(btn, letter, q);
+            document.getElementById('options-list').appendChild(btn);
+        });
+        document.getElementById('action-row').style.display = 'none';
+        document.getElementById('record-row').style.display = 'none';
+    }
+
+    questionStartTime = Date.now();
+    startTimer();
+}
 
         function startTimer() {
             const cfg = window._quizConfig || { timeLimit: 20 };
@@ -3335,6 +3351,39 @@
                     renderQ(); }, 600), 1000);
             }
         }
+
+        function handleJudgeClick(clickedBtn, userAnswer, q) {
+    if (answerShown) return;
+    stopTimer();
+    answerShown = true;
+    const elapsed = ((Date.now() - questionStartTime) / 1000).toFixed(1);
+    document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+    const isCorrect = (userAnswer === q.ans);
+    // 高亮正确选项
+    document.querySelectorAll('.option-btn').forEach(btn => {
+        const txt = btn.querySelector('.opt-text').textContent;
+        if (txt === q.ans) btn.classList.add('correct');
+    });
+    if (!isCorrect) clickedBtn.classList.add('wrong');
+    answerLog.push({
+        time: new Date().toLocaleString(),
+        subject: DB[currentSubjectKey]?.name || '',
+        type: '判断题',
+        question: q.q,
+        userAnswer: userAnswer,
+        correctAnswer: q.ans || '无',
+        result: isCorrect ? '✅ 正确' : '❌ 错误',
+        timeSpent: elapsed + '秒'
+    });
+    if (isCorrect) {
+        currentScore++;
+        setTimeout(() => { currentIdx++; renderQ(); }, 900);
+    } else {
+        currentWrong.push({ ...q, idx: currentIdx + 1 });
+        saveWrongToStorage('required', currentSubjectKey, currentWrong);
+        setTimeout(() => showMock(() => { currentIdx++; renderQ(); }, 600), 1000);
+    }
+}
 
         function submitMultiAnswer() {
             if (answerShown) return;
@@ -3620,7 +3669,7 @@
         // ════════════════════════════════════════════════════════════════
         // 抢答题
         // ════════════════════════════════════════════════════════════════
-        function startRushQuiz() {
+        function startRushQuiz() {const useJudge = document.getElementById('rush-judge')?.checked || false;
     const count = parseInt(document.getElementById('rush-count').value) || 24;
     const time = parseInt(document.getElementById('rush-time').value) || 60;
     const useSingle = document.getElementById('rush-single').checked;
@@ -3678,6 +3727,17 @@
                 });
             });
         }
+        if (useJudge && d.judge) {
+            d.judge.forEach((q, i) => {
+                pool.push({
+                    ...q,
+                    type: 'judge',
+                    subKey: key,
+                    subName: DB[key].name,
+                    _id: `${key}_judge_${i}`
+                });
+            });
+        }
     });
 
     if (pool.length === 0) {
@@ -3698,7 +3758,7 @@
 }
 
         function renderRushQ() {
-    // 1. 安全检查：列表空或索引越界
+    // 安全检查
     if (!rushQuestions || rushQuestions.length === 0) {
         alert('抢答题列表为空，请重新配置');
         showPage('rush-config');
@@ -3719,7 +3779,7 @@
 
     rushAnswerShown = false;
 
-    // 2. 获取所有 DOM 元素（安全获取）
+    // 获取元素
     const el = {
         qNum: document.getElementById('rush-q-num'),
         score: document.getElementById('rush-score'),
@@ -3735,41 +3795,52 @@
         recordRow: document.getElementById('rush-record-row'),
     };
 
-    // 若关键元素缺失则退出
     if (!el.qText || !el.options) {
         console.error('关键 DOM 元素缺失');
         return;
     }
 
-    // 3. 更新基础信息
+    // 更新基础信息
     if (el.qNum) el.qNum.textContent = `第 ${rushIdx+1} 题 / 共 ${rushQuestions.length} 题`;
     if (el.score) el.score.textContent = rushScore;
     if (el.counter) el.counter.textContent = `已答 ${rushIdx} 题，还剩 ${rushQuestions.length-rushIdx} 题`;
     if (el.progress) el.progress.style.width = Math.max(4, (rushIdx + 1) / rushQuestions.length * 100) + '%';
     if (el.qLabel) el.qLabel.textContent = `${q.subName || ''} · 第 ${rushIdx+1} 题`;
 
-    const typeMap = { single: '单选题', multi: '多选题', fill: '填空题', short: '简答题' };
+    const typeMap = { single: '单选题', multi: '多选题', fill: '填空题', judge: '判断题', short: '简答题' };
     if (el.badge) el.badge.textContent = typeMap[q.type] || '题目';
 
-    // 4. 显示题目文本
     el.qText.textContent = q.q || '（题目加载失败）';
 
-    // 5. 清空选项区域，重置控件
     el.options.innerHTML = '';
     if (el.fillBox) el.fillBox.style.display = 'none';
     if (el.actionRow) el.actionRow.style.display = '';
     if (el.recordRow) el.recordRow.style.display = 'none';
 
-    // 6. 根据题型渲染交互控件
-    if (q.type === 'fill' || q.type === 'short') {
-        // 填空题 / 简答题：显示「显示答案」按钮
+    // ----- 判断题分支 -----
+    if (q.type === 'judge') {
+        const judgeOpts = ['正确', '错误'];
+        const letters = ['A', 'B'];
+        judgeOpts.forEach((text, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `<span class="opt-label">${letters[idx]}</span><span class="opt-text">${text}</span>`;
+            btn.onclick = () => rushJudgeClick(btn, text, q);
+            el.options.appendChild(btn);
+        });
+        if (el.actionRow) el.actionRow.style.display = 'none';
+        if (el.recordRow) el.recordRow.style.display = 'none';
+    }
+    // ----- 填空/简答分支 -----
+    else if (q.type === 'fill' || q.type === 'short') {
         if (el.actionRow) {
             el.actionRow.innerHTML = `<button class="action-btn btn-show" onclick="rushShowAnswer()">👁 &nbsp;显示答案</button>`;
             el.actionRow.style.display = 'flex';
         }
         if (el.recordRow) el.recordRow.style.display = 'none';
-    } else if (q.type === 'multi') {
-        // 多选题：多选 + 提交按钮
+    }
+    // ----- 多选题分支 -----
+    else if (q.type === 'multi') {
         const letters = ['A', 'B', 'C', 'D', 'E'];
         const opts = q.opts || [];
         opts.forEach((opt, i) => {
@@ -3787,8 +3858,9 @@
             el.actionRow.style.display = 'flex';
         }
         if (el.recordRow) el.recordRow.style.display = 'none';
-    } else {
-        // 单选题：直接点击选项
+    }
+    // ----- 单选题分支 -----
+    else {
         const letters = ['A', 'B', 'C', 'D', 'E'];
         const opts = q.opts || [];
         opts.forEach((opt, i) => {
@@ -3804,7 +3876,6 @@
         if (el.recordRow) el.recordRow.style.display = 'none';
     }
 
-    // 7. 启动计时器
     startRushTimer();
 }
 
@@ -3867,6 +3938,40 @@
                 setTimeout(() => showMock(() => { rushIdx++;
                     renderRushQ(); }, 600), 1000); }
         }
+
+        function rushJudgeClick(clickedBtn, userAnswer, q) {
+    if (rushAnswerShown) return;
+    clearInterval(rushTimer);
+    rushAnswerShown = true;
+    const elapsed = window._rushConfig.time - rushTimeLeft;
+    const container = document.getElementById('rush-options');
+    const allBtns = container.querySelectorAll('.option-btn');
+    allBtns.forEach(btn => btn.disabled = true);
+    const isCorrect = (userAnswer === q.ans);
+    // 高亮正确选项
+    allBtns.forEach(btn => {
+        const txt = btn.querySelector('.opt-text').textContent;
+        if (txt === q.ans) btn.classList.add('correct');
+    });
+    if (!isCorrect) clickedBtn.classList.add('wrong');
+    rushLog.push({
+        idx: rushIdx + 1,
+        q: q.q,
+        sub: q.subName,
+        type: '判断题',
+        ans: q.ans || '无',
+        result: isCorrect ? '✅ 正确' : '❌ 错误',
+        time: elapsed
+    });
+    if (isCorrect) {
+        rushScore++;
+        setTimeout(() => { rushIdx++; renderRushQ(); }, 900);
+    } else {
+        rushWrong.push({ ...q, idx: rushIdx + 1 });
+        saveWrongToStorage('rush', null, rushWrong);
+        setTimeout(() => showMock(() => { rushIdx++; renderRushQ(); }, 600), 1000);
+    }
+}
 
         function rushSubmitMulti() {
             if (rushAnswerShown) return;
